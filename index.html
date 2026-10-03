@@ -6,17 +6,44 @@
      ========================================================================== -->
 <script>
 window.CONFIG = {
-  APP_VERSION: "v0.1",
-  APP_TITLE: "✈️ Faretasmic!",
-  DEFAULT_HOME_ORIGIN_AIRPORT_IATA: "SFO",
-  DEFAULT_CABIN_CLASS: "economy",
-  MAXIMUM_FREE_TIER_MONTHLY_CALLS: 1000,
-  DEFAULT_FAILSAFE_LOCKOUT_CALLS: 950,
+  /* ========================================================================
+     SECTION 1: APP IDENTITY (Alphabetical)
+     ======================================================================== */
+  APP_TITLE: "✨ Faretasmic!",
+  APP_VERSION: "v0.2",
+
+  /* ========================================================================
+     SECTION 2: FIREBASE CONFIGURATION
+     ======================================================================== */
   FIREBASE: {
     apiKey: "AIzaSyDtUAQVNKqQQ-nIVPIzHZuW7gUjg1j7C_c",
     authDomain: "faretasmic.firebaseapp.com",
     projectId: "faretasmic"
-  }
+  },
+
+  /* ========================================================================
+     SECTION 3: QUOTA & CALL CONTROLS (Alphabetical)
+     ======================================================================== */
+  DEFAULT_FAILSAFE_LOCKOUT_CALLS: 950,
+  MAXIMUM_FREE_TIER_MONTHLY_CALLS: 1000,
+
+  /* ========================================================================
+     SECTION 4: DEFAULTS (Alphabetical)
+     ======================================================================== */
+  DEFAULT_CABIN_CLASS: "economy",
+  DEFAULT_HOME_ORIGIN_AIRPORT_IATA: "SFO",
+
+  /* ========================================================================
+     SECTION 5: CUSTOM UI TEXT STRINGS (Alphabetical)
+     ======================================================================== */
+  BTN_ADD_FLIGHT: "Add Flight",
+  BTN_SETTINGS: "Settings",
+  BTN_START_TRACKING: "Start Tracking",
+  BTN_THEME: "Theme",
+  EMPTY_STATE_SUBTITLE: "Configure a route to begin price surveillance.",
+  EMPTY_STATE_TITLE: "🔭 No Flights Monitored",
+  PLACEHOLDER_DESTINATION_IATA: "Select Destination",
+  PLACEHOLDER_TRIP_NAME: "e.g. Joe's Vacation"
 };
 </script>
 
@@ -25,63 +52,160 @@ window.CONFIG = {
      ========================================================================== -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SkyOracle Tracker</title>
+<title>✨ Faretasmic!</title>
+
+<!-- Master Typography Bundle -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;800&family=Press+Start+2P&family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&family=JetBrains+Mono&family=Cinzel:wght@600&family=VT323&family=Fira+Code&family=Quicksand:wght@500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs (v10 Compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
 
 <!-- ==========================================================================
      LAYER 3: STYLING ENGINE (TOKENS & ARCHITECTURE)
      ========================================================================== -->
 <style>
-/* --- THEME TOKENS --- */
+/* --- 1. THEME TOKENS (9 Curated Themes) --- */
 :root, [data-theme="modern-dark"] {
-  --bg-base: #121212; --bg-surface: #1e1e1e; --bg-surface-hover: #2a2a2a; --bg-input: #2d2d2d; --bg-placeholder: #333333; --bg-backdrop: rgba(0,0,0,0.75); --text-main: #ffffff; --text-muted: #a0a0a0; --text-inverse: #000000; --text-disabled: #666666; --border: #333333; --border-hover: #555555; --border-focus: #4da6ff; --accent: #4da6ff; --accent-hover: #3388ff; --success: #00cc66; --warning: #ffaa00; --danger: #ff4444; --bg-badge: #333333; --text-badge: #ffffff; --shadow: 0 4px 16px rgba(0,0,0,0.5); --font-main: 'Inter', sans-serif; --font-heading: 'Inter', sans-serif; --radius: 8px; --scrollbar-thumb: #555555; --scrollbar-track: #1e1e1e; --accent-completion: #00cc66;
+  --bg-base: #121212; --bg-surface: #1e1e1e; --bg-surface-hover: #2a2a2a; --bg-input: #2d2d2d; --bg-placeholder: #333333; --bg-backdrop: rgba(0,0,0,0.75); --text-main: #ffffff; --text-muted: #a0a0a0; --text-inverse: #000000; --text-disabled: #666666; --border: #333333; --border-hover: #555555; --border-focus: #4da6ff; --accent: #4da6ff; --accent-hover: #3388ff; --success: #00cc66; --warning: #ffaa00; --danger: #ff4444; --bg-badge: #333333; --text-badge: #ffffff; --shadow: 0 4px 16px rgba(0,0,0,0.5); --font-main: 'Inter', -apple-system, sans-serif; --font-heading: 'Inter', sans-serif; --radius: 8px; --scrollbar-thumb: #555555; --scrollbar-track: #1e1e1e; --accent-completion: #00cc66;
+}
+[data-theme="minimalist-light"] {
+  --bg-base: #f5f5f7; --bg-surface: #ffffff; --bg-surface-hover: #f0f0f2; --bg-input: #ffffff; --bg-placeholder: #e5e5ea; --bg-backdrop: rgba(255,255,255,0.85); --text-main: #1d1d1f; --text-muted: #86868b; --text-inverse: #ffffff; --text-disabled: #aeaeb2; --border: #d2d2d7; --border-hover: #86868b; --border-focus: #0071e3; --accent: #0071e3; --accent-hover: #0056b3; --success: #34c759; --warning: #ff9f0a; --danger: #ff3b30; --bg-badge: #e5e5ea; --text-badge: #1d1d1f; --shadow: 0 4px 16px rgba(0,0,0,0.08); --font-main: system-ui, -apple-system, sans-serif; --font-heading: system-ui, -apple-system, sans-serif; --radius: 8px; --scrollbar-thumb: #c7c7cc; --scrollbar-track: #f5f5f7; --accent-completion: #34c759;
+}
+[data-theme="modern-light"] {
+  --bg-base: #f8fafc; --bg-surface: #ffffff; --bg-surface-hover: #f1f5f9; --bg-input: #ffffff; --bg-placeholder: #e2e8f0; --bg-backdrop: rgba(248,250,252,0.85); --text-main: #0f172a; --text-muted: #64748b; --text-inverse: #ffffff; --text-disabled: #94a3b8; --border: #e2e8f0; --border-hover: #cbd5e1; --border-focus: #2563eb; --accent: #2563eb; --accent-hover: #1d4ed8; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg-badge: #e0f2fe; --text-badge: #0369a1; --shadow: 0 4px 16px rgba(15,23,42,0.08); --font-main: 'Plus Jakarta Sans', sans-serif; --font-heading: 'Plus Jakarta Sans', sans-serif; --radius: 10px; --scrollbar-thumb: #cbd5e1; --scrollbar-track: #f8fafc; --accent-completion: #10b981;
 }
 [data-theme="retro-arcade"] {
   --bg-base: #050510; --bg-surface: #101025; --bg-surface-hover: #1b1b38; --bg-input: #0c0c1d; --bg-placeholder: #222244; --bg-backdrop: rgba(5,5,16,0.85); --text-main: #f0f0ff; --text-muted: #8888bb; --text-inverse: #050510; --text-disabled: #555577; --border: #ffcc00; --border-hover: #ff0055; --border-focus: #00ffff; --accent: #ff0055; --accent-hover: #ff3377; --success: #00ff66; --warning: #ffcc00; --danger: #ff2222; --bg-badge: #ff0055; --text-badge: #ffffff; --shadow: 0 0 15px rgba(255,0,85,0.35); --font-main: 'Press Start 2P', monospace; --font-heading: 'Press Start 2P', monospace; --radius: 2px; --scrollbar-thumb: #ffcc00; --scrollbar-track: #101025; --accent-completion: #00ffff;
 }
+[data-theme="synthwave-sunset"] {
+  --bg-base: #0b0c10; --bg-surface: #1a162b; --bg-surface-hover: #282142; --bg-input: #120e20; --bg-placeholder: #322550; --bg-backdrop: rgba(11,12,16,0.85); --text-main: #66fcf1; --text-muted: #c5a8e0; --text-inverse: #0b0c10; --text-disabled: #5a4b70; --border: #ff007f; --border-hover: #00f0ff; --border-focus: #ffe600; --accent: #ff007f; --accent-hover: #e00070; --success: #00f0ff; --warning: #ffe600; --danger: #ff2a6d; --bg-badge: #ff007f; --text-badge: #ffffff; --shadow: 0 4px 20px rgba(255,0,127,0.3); --font-main: 'Rajdhani', sans-serif; --font-heading: 'Orbitron', sans-serif; --radius: 8px; --scrollbar-thumb: #ff007f; --scrollbar-track: #1a162b; --accent-completion: #00f0ff;
+}
 [data-theme="cyberpunk"] {
   --bg-base: #05080f; --bg-surface: #0e1420; --bg-surface-hover: #162032; --bg-input: #080c14; --bg-placeholder: #1b263b; --bg-backdrop: rgba(5,8,15,0.85); --text-main: #fcee09; --text-muted: #00e8f8; --text-inverse: #05080f; --text-disabled: #415a77; --border: #00e8f8; --border-hover: #fcee09; --border-focus: #ff003c; --accent: #fcee09; --accent-hover: #e0d408; --success: #00e8f8; --warning: #ffbe0b; --danger: #ff003c; --bg-badge: #fcee09; --text-badge: #05080f; --shadow: 0 0 18px rgba(0,232,248,0.25); --font-main: 'Share Tech Mono', monospace; --font-heading: 'Share Tech Mono', monospace; --radius: 0px; --scrollbar-thumb: #fcee09; --scrollbar-track: #0e1420; --accent-completion: #ff003c;
 }
-/* Add remaining 6 themes as desired locally to keep token limits safe */
+[data-theme="gothic-crimson"] {
+  --bg-base: #0c0809; --bg-surface: #171012; --bg-surface-hover: #24191d; --bg-input: #120b0d; --bg-placeholder: #2c161a; --bg-backdrop: rgba(12,8,9,0.85); --text-main: #e8d7c3; --text-muted: #a38f7e; --text-inverse: #0c0809; --text-disabled: #5e4f48; --border: #801824; --border-hover: #d4af37; --border-focus: #d4af37; --accent: #991b29; --accent-hover: #b52233; --success: #4e8054; --warning: #d4af37; --danger: #e61932; --bg-badge: #380d12; --text-badge: #d4af37; --shadow: 0 4px 20px rgba(128,24,36,0.35); --font-main: 'Cinzel', serif; --font-heading: 'Cinzel', serif; --radius: 4px; --scrollbar-thumb: #801824; --scrollbar-track: #171012; --accent-completion: #d4af37;
+}
+[data-theme="wasteland-terminal"] {
+  --bg-base: #020803; --bg-surface: #041206; --bg-surface-hover: #071f0a; --bg-input: #030d04; --bg-placeholder: #0b2b0f; --bg-backdrop: rgba(2,8,3,0.85); --text-main: #33ff33; --text-muted: #1c991c; --text-inverse: #020803; --text-disabled: #0f5210; --border: #1c991c; --border-hover: #33ff33; --border-focus: #66ff66; --accent: #33ff33; --accent-hover: #66ff66; --success: #33ff33; --warning: #b3ff33; --danger: #ff3333; --bg-badge: #092e0c; --text-badge: #33ff33; --shadow: 0 0 16px rgba(51,255,51,0.25); --font-main: 'VT323', monospace; --font-heading: 'VT323', monospace; --radius: 2px; --scrollbar-thumb: #1c991c; --scrollbar-track: #041206; --accent-completion: #ffb000;
+}
+[data-theme="cozy-village"] {
+  --bg-base: #f5f0eb; --bg-surface: #fffdfa; --bg-surface-hover: #ede6dd; --bg-input: #faf7f2; --bg-placeholder: #e4dcd3; --bg-backdrop: rgba(245,240,235,0.85); --text-main: #4a3e35; --text-muted: #7d6b5c; --text-inverse: #ffffff; --text-disabled: #b0a193; --border: #d6c7b8; --border-hover: #8ba888; --border-focus: #6b8e67; --accent: #6b8e67; --accent-hover: #557551; --success: #78a874; --warning: #d99a4e; --danger: #c75c5c; --bg-badge: #e2ede0; --text-badge: #4d694a; --shadow: 0 4px 14px rgba(74,62,53,0.08); --font-main: 'Nunito', sans-serif; --font-heading: 'Quicksand', sans-serif; --radius: 12px; --scrollbar-thumb: #c2b2a1; --scrollbar-track: #f5f0eb; --accent-completion: #78a874;
+}
 
-/* --- GLOBAL RESETS & NORMALIZATION --- */
+/* --- 2. GLOBAL RESETS & NORMALIZATION --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--bg-base); color: var(--text-main); font-family: var(--font-main); transition: 0.2s ease; overflow-x: hidden; }
+body { 
+  background: var(--bg-base); 
+  color: var(--text-main); 
+  font-family: var(--font-main); 
+  /* Isolate transitions to prevent latency */
+  transition: background-color 0.15s ease, color 0.15s ease; 
+  overflow-x: hidden; 
+}
 body.modal-open { overflow: hidden; }
 h1, h2, h3 { font-family: var(--font-heading); }
-button, input, select { font-family: var(--font-main); outline: none; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-input); color: var(--text-main); }
-button { cursor: pointer; transition: 0.2s; white-space: normal; } /* Zero ellipses requirement */
+
+/* Form Elements Normalization */
+button, input, select { 
+  font-family: var(--font-main); 
+  outline: none; 
+  border: 1px solid var(--border); 
+  border-radius: var(--radius); 
+  background: var(--bg-input); 
+  color: var(--text-main);
+  touch-action: manipulation; /* Eliminate mobile tap delay */
+}
+select option { background: var(--bg-surface); color: var(--text-main); }
+
+button { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; white-space: normal; }
 button:hover { border-color: var(--border-hover); background: var(--bg-surface-hover); }
 
-/* Retro Arcade normalizations */
-[data-theme="retro-arcade"] input, [data-theme="retro-arcade"] select, [data-theme="retro-arcade"] button { font-size: 11px; }
+/* High Contrast Calendar Picker & Native color-scheme */
+input[type="date"] { color-scheme: dark light; }
+::-webkit-calendar-picker-indicator { 
+  filter: invert(0.8); 
+  opacity: 0.9; 
+  cursor: pointer; 
+}
+[data-theme="minimalist-light"] ::-webkit-calendar-picker-indicator,
+[data-theme="modern-light"] ::-webkit-calendar-picker-indicator,
+[data-theme="cozy-village"] ::-webkit-calendar-picker-indicator {
+  filter: invert(0.2); 
+}
 
-/* --- LAYOUT ARCHITECTURE --- */
+/* Font Adjustments */
+[data-theme="retro-arcade"] input, [data-theme="retro-arcade"] select, [data-theme="retro-arcade"] button { font-size: 11px; }
+[data-theme="wasteland-terminal"] body, [data-theme="wasteland-terminal"] input, [data-theme="wasteland-terminal"] select, [data-theme="wasteland-terminal"] button { font-size: 18px; }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--radius); }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* --- 3. LAYOUT ARCHITECTURE --- */
 .app-container { max-width: 1200px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
-.header-tray { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+
+/* Responsive System Tray */
+.header-tray { 
+  display: flex; 
+  flex-wrap: wrap; 
+  align-items: center; 
+  justify-content: space-between; 
+  background: var(--bg-surface); 
+  padding: 15px; 
+  border-radius: var(--radius); 
+  border: 1px solid var(--border); 
+  gap: 10px; 
+}
+.header-brand { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.app-version { font-size: 0.65em; opacity: 0.75; font-family: var(--font-main); }
 .header-actions { display: flex; gap: 8px; }
 
-.telemetry-tray { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); background: var(--bg-input); padding: 10px; border-radius: var(--radius); flex-wrap: wrap; gap: 10px; }
-.telemetry-item { display: flex; align-items: center; gap: 6px; }
+.telemetry-tray { 
+  display: flex; 
+  flex: 1;
+  justify-content: center; 
+  align-items: center;
+  font-size: 13px; 
+  color: var(--text-muted); 
+  gap: 12px; 
+}
+.telemetry-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+
+@media (max-width: 880px) {
+  .telemetry-tray { 
+    flex-basis: 100%; 
+    order: 3; 
+    justify-content: space-between; 
+    background: var(--bg-input);
+    padding: 10px;
+    border-radius: var(--radius);
+    margin-top: 5px;
+  }
+}
+@media (max-width: 480px) {
+  .telemetry-tray { flex-wrap: wrap; justify-content: flex-start; }
+}
 
 .main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-@media(min-width: 900px) {
-  .main-grid { grid-template-columns: 350px 1fr; }
-}
+@media(min-width: 900px) { .main-grid { grid-template-columns: 350px 1fr; } }
 
 .panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 .panel-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
 
-/* --- UI COMPONENTS --- */
+/* --- 4. UI COMPONENTS --- */
 .primary-btn { background: var(--accent); color: var(--text-inverse); font-weight: bold; padding: 12px; border: none; font-size: 14px; text-align: center; }
-.primary-btn:hover { background: var(--accent-hover); }
+.primary-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .secondary-btn { padding: 10px; font-size: 13px; font-weight: bold; }
 
 .status-badge { display: inline-block; padding: 6px 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
 .status-buy { background: var(--success); color: var(--text-inverse); }
 .status-hold { background: var(--warning); color: var(--text-inverse); }
 
-/* --- PRICE GAUGE --- */
+/* --- PRICE GAUGE & CHART --- */
 .gauge-container { width: 100%; height: 24px; display: flex; border-radius: var(--radius); overflow: hidden; position: relative; margin-top: 10px; border: 1px solid var(--border); }
 .gauge-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); }
 .gauge-low { flex: 1; background: var(--success); opacity: 0.8; }
@@ -90,39 +214,36 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
 .gauge-marker { position: absolute; top: -2px; width: 2px; height: 28px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 .gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
 
-/* --- MOCK TRAJECTORY CHART --- */
 .mock-chart { height: 150px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px; gap: 4px; }
-.chart-bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; transition: 0.3s; min-height: 10px; position: relative; }
+.chart-bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; min-height: 10px; position: relative; }
 .chart-bar.anchor { background: var(--success); opacity: 1; }
 
-/* --- MODALS (Strict Containment) --- */
+/* --- 5. MODALS & FORMS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
 .modal-overlay.active { display: flex; }
 .modal-content { background: var(--bg-surface); border: 1px solid var(--accent); border-radius: var(--radius); width: 95vw; max-width: 580px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow); }
 .modal-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
 .modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-.modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+.modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
-/* Form Controls & Autocomplete */
 .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
 .form-group label { font-size: 12px; color: var(--text-muted); }
 .form-control { padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; height: 38px; min-height: 38px; -webkit-appearance: none; appearance: none; }
-.form-row { display: flex; gap: 10px; }
+.form-row { display: flex; gap: 10px; align-items: flex-start; }
 .form-row > * { flex: 1; min-width: 0; }
 
 .autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; max-height: 150px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); }
 .autocomplete-item { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); }
 .autocomplete-item:hover { background: var(--bg-surface-hover); }
 
-/* Multi-select Pills */
+/* Pill Ergonomics */
 .pill-container { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); min-height: 38px; background: var(--bg-input); }
-.airline-pill { background: var(--bg-surface-hover); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
-.airline-pill span { cursor: pointer; color: var(--danger); font-weight: bold; }
+.airline-pill { background: var(--bg-badge); color: var(--text-badge); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-hover); font-size: 12px; display: flex; align-items: center; gap: 6px; transition: transform 0.15s ease, filter 0.15s; }
+.airline-pill:hover { transform: translateY(-1px); filter: brightness(1.1); }
+.airline-pill span { cursor: pointer; font-weight: bold; padding: 0 4px; }
+.airline-pill span:hover { filter: invert(1); }
 
-/* Empty State Canvas */
 #empty-state-canvas { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); gap: 15px; }
-
-/* Utilities */
 .hidden { display: none !important; }
 </style>
 </head>
@@ -133,22 +254,25 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
      ========================================================================== -->
 <div class="app-container">
   
-  <!-- Header & Theming -->
+  <!-- Header & Telemetry Tray -->
   <header class="header-tray">
-    <h2 id="ui-app-title">✈️ SkyOracle Engine</h2>
+    <div class="header-brand">
+      <h2 id="ui-app-title">✨ Faretasmic!</h2>
+      <span id="ui-app-version" class="app-version">v0.2</span>
+    </div>
+    
+    <div class="telemetry-tray">
+      <div class="telemetry-item" id="telemetry-api">🟢 API: Ready | 412/1000 (41.2%)</div>
+      <div class="telemetry-item" id="telemetry-gate">🛡️ Fetch Shield: 🟢 SAFE (<95%)</div>
+      <div class="telemetry-item" id="telemetry-db">🟢 Database: Synced</div>
+      <div class="telemetry-item" id="telemetry-cadence">⏱️ Last Fetch: DAILY 02:00 UTC</div>
+    </div>
+
     <div class="header-actions">
-      <button class="secondary-btn" onclick="ThemeEngine.setTheme('random')" title="Switch Theme">🎨</button>
-      <button class="secondary-btn" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙️</button>
+      <button class="secondary-btn btn-theme" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')" title="Theme">🎨</button>
+      <button class="secondary-btn btn-settings" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙️️</button>
     </div>
   </header>
-
-  <!-- Telemetry Tray -->
-  <div class="telemetry-tray">
-    <div class="telemetry-item" id="telemetry-api">🟢 API: Ready | 412/1000 (41.2%)</div>
-    <div class="telemetry-item" id="telemetry-db">🟢 DB: Synced</div>
-    <div class="telemetry-item" id="telemetry-cadence">⏱️ Pull: DAILY 02:00 UTC</div>
-    <div class="telemetry-item" id="telemetry-gate">🛡️ Gate: 🟢 SAFE (<95%)</div>
-  </div>
 
   <!-- Main Split Architecture -->
   <div class="main-grid">
@@ -157,12 +281,12 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
     <div class="left-col" style="display: flex; flex-direction: column; gap: 15px;">
       
       <div class="panel">
-        <div class="panel-title">Active Monitors (1 / 33)</div>
+        <div class="panel-title">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
         <select class="form-control" id="select-active-monitored-route">
           <option value="none">-- Select Route --</option>
         </select>
         <div class="form-row">
-          <button class="primary-btn" onclick="UIEngine.openModal('modal-add-flight')">✈️ ADD FLIGHT 🚀</button>
+          <button class="primary-btn" id="ui-btn-add-flight-main" onclick="UIEngine.openModal('modal-add-flight')">✈️ ADD FLIGHT 🚀</button>
           <button class="secondary-btn" onclick="UIEngine.openModal('modal-true-up')" id="btn-manual-fetch" disabled>⚡ Fetch</button>
         </div>
       </div>
@@ -192,9 +316,9 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
       
       <!-- Empty State Canvas -->
       <div id="empty-state-canvas">
-        <h1>🔭 No Flights Monitored</h1>
-        <p>Your Oracle Engine is fueled and ready. Initialize your first Genesis Sweep to lock in a pricing baseline.</p>
-        <button class="primary-btn" onclick="UIEngine.openModal('modal-add-flight')">✈️ INITIALIZE TRACE 🚀</button>
+        <h1 id="ui-empty-title">🔭 No Flights Monitored</h1>
+        <p id="ui-empty-subtitle">Configure a route to begin price surveillance.</p>
+        <button class="primary-btn" id="ui-btn-add-flight-empty" onclick="UIEngine.openModal('modal-add-flight')">Add Flight</button>
       </div>
 
       <!-- Active Dashboard (Hidden initially) -->
@@ -236,23 +360,46 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
      MODALS
      ========================================================================== -->
 
-<!-- 1. Add Flight Modal -->
+<!-- 1. Theme Picker Modal -->
+<div class="modal-overlay" id="modal-theme">
+  <div class="modal-content" style="max-width: 580px;">
+    <div class="modal-header" style="justify-content: center; position: relative;">
+      <span style="flex:1; text-align:center;">🎨 SELECT THEME</span>
+      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="primary-btn" onclick="ThemeEngine.setTheme('random')">🎲 Random</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('cozy-village')">🌿 Cozy Village</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('cyberpunk')">⚡ Cyberpunk</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('gothic-crimson')">🍷 Gothic Crimson</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('minimalist-light')">⚪ Minimalist Light</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('modern-dark')">🌑 Modern Dark</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('modern-light')">☀️ Modern Light</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('retro-arcade')">🕹️ Retro Arcade</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('synthwave-sunset')">🌆 Synthwave Sunset</button>
+        <button class="secondary-btn" onclick="ThemeEngine.setTheme('wasteland-terminal')">📟 Wasteland Terminal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Add Flight Modal -->
 <div class="modal-overlay" id="modal-add-flight">
   <div class="modal-content">
-    <div class="modal-header">
-      <span>✈️ ADD MONITORED FLIGHT 🚀</span>
-      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-add-flight')">X</button>
+    <div class="modal-header" style="justify-content: center; position: relative;">
+      <span style="flex:1; text-align:center;">✈️ ADD FLIGHT 🚀</span>
+      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-add-flight')">✕</button>
     </div>
     <div class="modal-body">
       
+      <!-- Row 1 -->
       <div class="form-group">
-        <label>BASE CURRENCY (Locked for this Trace):</label>
-        <div style="display: flex; gap: 15px; font-size: 14px;">
-          <label><input type="radio" name="input-currency-selection" value="USD" checked> USD ($)</label>
-          <label><input type="radio" name="input-currency-selection" value="CAD"> CAD ($)</label>
-        </div>
+        <label>TRIP NAME:</label>
+        <input type="text" class="form-control" id="input-trip-tag" placeholder="e.g. Joe's Vacation">
       </div>
 
+      <!-- Row 2 -->
       <div class="form-row">
         <div class="form-group">
           <label>TRIP TYPE:</label>
@@ -262,11 +409,25 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
           </select>
         </div>
         <div class="form-group">
-          <label>TRIP TAG:</label>
-          <input type="text" class="form-control" id="input-trip-tag" placeholder="e.g. Joe's Vacation">
+          <label>BASE CURRENCY (⚠️ CANNOT BE CHANGED LATER):</label>
+          <select class="form-control" id="input-currency-selection">
+            <option value="USD">USD ($)</option>
+            <option value="CAD">CAD ($)</option>
+          </select>
         </div>
       </div>
 
+      <!-- Row 3 -->
+      <div class="form-group">
+        <label>JUNK FARE FILTER:</label>
+        <select class="form-control" id="input-stop-filter">
+          <option value="nonstop">Nonstop Only</option>
+          <option value="1stop">Max 1 Stop</option>
+          <option value="any">Any Stops</option>
+        </select>
+      </div>
+
+      <!-- Row 4 -->
       <div class="form-row">
         <div class="form-group">
           <label>ORIGIN (IATA):</label>
@@ -275,7 +436,7 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
         </div>
         <div class="form-group">
           <label>DESTINATION (IATA):</label>
-          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off">
+          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off" placeholder="Select Destination">
           <div class="autocomplete-dropdown" id="dropdown-dest-iata"></div>
         </div>
       </div>
@@ -294,11 +455,7 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
       <div class="form-row">
         <div class="form-group">
           <label>PASSENGERS:</label>
-          <select class="form-control" id="input-passenger-count">
-            <option value="1">1 Passenger</option>
-            <option value="2">2 Passengers</option>
-            <option value="3">3 Passengers</option>
-          </select>
+          <input type="number" class="form-control" id="input-passenger-count" min="1" max="10" value="1">
         </div>
         <div class="form-group">
           <label>CABIN CLASS:</label>
@@ -312,54 +469,50 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
       </div>
 
       <div class="form-group">
-        <label>GENESIS SWEEP HORIZON (Days to model): <span id="ui-slider-val" style="color: var(--accent); font-weight: bold;">21</span></label>
-        <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="21" style="width: 100%; margin-top: 5px;" oninput="document.getElementById('ui-slider-val').innerText = this.value">
+        <label>GENESIS SWEEP HORIZON (Days to model): <span id="ui-slider-val" style="color: var(--accent); font-weight: bold;">14</span></label>
+        <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="14" style="width: 100%; margin-top: 5px;" oninput="document.getElementById('ui-slider-val').innerText = this.value">
       </div>
 
       <div class="form-group">
         <label>TARGET AIRLINES (Multi-Select):</label>
-        <div class="pill-container" id="container-airline-tags">
-          <div class="airline-pill">DL <span onclick="this.parentElement.remove()">✕</span></div>
-          <div class="airline-pill">JL <span onclick="this.parentElement.remove()">✕</span></div>
+        <div class="form-row" style="align-items: center;">
+          <select class="form-control" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)" style="flex: 0 0 160px; max-width: 160px;">
+            <option value="">+ Add Carrier...</option>
+            <option value="AA">American Airlines (AA)</option>
+            <option value="AC">Air Canada (AC)</option>
+            <option value="NH">All Nippon Airways (NH)</option>
+            <option value="CX">Cathay Pacific (CX)</option>
+          </select>
+          <div class="pill-container" id="container-airline-tags" style="flex: 1; border: none; background: transparent; padding: 0;">
+            <div class="airline-pill">DL <span onclick="this.parentElement.remove()">✕</span></div>
+            <div class="airline-pill">JL <span onclick="this.parentElement.remove()">✕</span></div>
+          </div>
         </div>
-        <select class="form-control" style="margin-top: 5px;" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)">
-          <option value="">+ Add Carrier...</option>
-          <option value="AA">American Airlines (AA)</option>
-          <option value="AC">Air Canada (AC)</option>
-          <option value="NH">All Nippon Airways (NH)</option>
-          <option value="CX">Cathay Pacific (CX)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>JUNK FARE FILTER:</label>
-        <select class="form-control" id="input-stop-filter">
-          <option value="nonstop">Nonstop Only</option>
-          <option value="1stop">Max 1 Stop</option>
-          <option value="any">Any Stops</option>
-        </select>
       </div>
 
     </div>
     <div class="modal-footer">
       <button class="secondary-btn" onclick="UIEngine.closeModal('modal-add-flight')">CANCEL</button>
-      <button class="primary-btn" onclick="ApplicationLogic.initializeNewRoute()">START TRACKING</button>
+      <button class="primary-btn" id="ui-btn-start-tracking" onclick="ApplicationLogic.initializeNewRoute()">Start Tracking</button>
     </div>
   </div>
 </div>
 
-<!-- 2. Settings Modal -->
+<!-- 3. Settings Modal -->
 <div class="modal-overlay" id="modal-settings">
   <div class="modal-content">
-    <div class="modal-header">
-      <span>⚙️ ENGINE SETTINGS</span>
-      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-settings')">X</button>
+    <div class="modal-header" style="justify-content: center; position: relative;">
+      <span style="flex:1; text-align:center;">⚙️ SETTINGS</span>
+      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-settings')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label>MONTHLY USAGE TELEMETRY:</label>
-        <div style="font-size: 14px;">Current Window: Oct 01 — Oct 31, 2026</div>
-        <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: 412 / 1000 (41.2%)</div>
+        <div style="font-size: 14px;">Current Window: Oct 01 - Oct 31, 2026</div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+          <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: <span id="ui-settings-fetch-count">412</span> / 1000</div>
+          <button class="secondary-btn" style="padding: 4px 8px; font-size: 11px;" onclick="ApplicationLogic.promptFetchOverride()">EDIT</button>
+        </div>
       </div>
       <hr style="border: 0; border-top: 1px solid var(--border);">
       <div class="form-group">
@@ -367,26 +520,27 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
         <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
           <input type="checkbox" checked> Enable Automatic Quota Gate
         </label>
-        <div class="form-row" style="margin-top: 10px;">
-          <input type="number" class="form-control" value="950" readonly>
-          <input type="text" class="form-control" value="Calls Threshold" readonly style="background: transparent; border: none;">
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Safety tripwire: Automatically halts scheduled fetches when the threshold is hit.</div>
+        <div class="form-row" style="margin-top: 10px; align-items: center;">
+          <input type="number" class="form-control" id="input-lock-threshold" min="1" max="9999" value="950" style="max-width: 90px; text-align: center;">
+          <span style="font-size: 13px; color: var(--text-muted);">Calls Threshold</span>
         </div>
-        <div style="font-size: 13px; color: var(--success);">🟢 UNLOCKED (538 calls remaining)</div>
+        <div style="font-size: 13px; color: var(--success); margin-top: 10px;">🟢 UNLOCKED (538 calls remaining)</div>
       </div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="justify-content: space-between;">
       <button class="secondary-btn" onclick="UIEngine.closeModal('modal-settings')">CLOSE</button>
-      <button class="primary-btn" onclick="UIEngine.closeModal('modal-settings')">SAVE</button>
+      <button class="primary-btn" onclick="ApplicationLogic.saveSettings()">SAVE</button>
     </div>
   </div>
 </div>
 
-<!-- 3. Manual True-Up Modal -->
+<!-- 4. Manual True-Up Modal -->
 <div class="modal-overlay" id="modal-true-up">
   <div class="modal-content">
     <div class="modal-header">
       <span>⚠️ MANUAL HORIZON TRUE-UP</span>
-      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">X</button>
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">✕</button>
     </div>
     <div class="modal-body">
       <p style="font-size: 14px; line-height: 1.5;">Executing this manual sweep will overwrite the current elastically interpolated data with live Ignav API pricing.</p>
@@ -396,7 +550,7 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
         <li>Projected Usage: <strong id="ui-trueup-projected">433</strong></li>
       </ul>
       <div style="background: var(--bg-input); padding: 10px; border-left: 4px solid var(--success); font-size: 13px; margin-top: 10px;">
-        🟢 SAFE: This execution will not breach your 950 lock threshold.
+        🟢 SAFE: This execution will not breach your lock threshold.
       </div>
     </div>
     <div class="modal-footer">
@@ -411,7 +565,10 @@ button:hover { border-color: var(--border-hover); background: var(--bg-surface-h
      ========================================================================== -->
 <script>
 /* --- THEME ENGINE --- */
-const THEMES = {"modern-dark":1, "retro-arcade":1, "cyberpunk":1}; // Minimalized array for demo safety
+const THEMES = {
+  "modern-dark":1, "minimalist-light":1, "modern-light":1, "retro-arcade":1, 
+  "synthwave-sunset":1, "cyberpunk":1, "gothic-crimson":1, "wasteland-terminal":1, "cozy-village":1
+};
 const ThemeEngine = {
   getThemeKeys() { return Object.keys(THEMES); },
   getActiveTheme() { return localStorage.getItem('app_theme') || 'modern-dark'; },
@@ -421,7 +578,10 @@ const ThemeEngine = {
       const keys = this.getThemeKeys();
       resolvedTheme = keys[Math.floor(Math.random() * keys.length)];
     }
-    document.body.setAttribute('data-theme', resolvedTheme);
+    // Instant paint wrapping
+    requestAnimationFrame(() => {
+      document.body.setAttribute('data-theme', resolvedTheme);
+    });
     return resolvedTheme;
   },
   setTheme(themeKey) {
@@ -431,7 +591,24 @@ const ThemeEngine = {
   init() { this.applyTheme(this.getActiveTheme()); }
 };
 
-/* --- IATA AIRPORT DICTIONARY (ZERO-COST EMBEDDED) --- */
+/* --- FIREBASE HYDRATION ENGINE (PREP) --- */
+const FirebaseEngine = {
+  app: null,
+  db: null,
+  init() {
+    try {
+      if (typeof firebase !== 'undefined') {
+        this.app = firebase.initializeApp(window.CONFIG.FIREBASE);
+        this.db = firebase.firestore();
+        console.log("Firebase initialized. Awaiting live listeners (v0.3).");
+      }
+    } catch(e) {
+      console.warn("Firebase offline or credentials missing. Falling back to local state.", e);
+    }
+  }
+};
+
+/* --- IATA AIRPORT DICTIONARY --- */
 const AIRPORT_DICTIONARY = [
   { iata: "SFO", city: "San Francisco", name: "SFO Int." },
   { iata: "JFK", city: "New York", name: "John F. Kennedy" },
@@ -439,15 +616,7 @@ const AIRPORT_DICTIONARY = [
   { iata: "HND", city: "Tokyo", name: "Haneda" },
   { iata: "NRT", city: "Tokyo", name: "Narita" },
   { iata: "LHR", city: "London", name: "Heathrow" },
-  { iata: "CDG", city: "Paris", name: "Charles de Gaulle" },
-  { iata: "FRA", city: "Frankfurt", name: "Frankfurt Int." },
-  { iata: "SIN", city: "Singapore", name: "Changi" },
-  { iata: "YYZ", city: "Toronto", name: "Pearson Int." },
-  { iata: "YVR", city: "Vancouver", name: "Vancouver Int." },
-  { iata: "HKG", city: "Hong Kong", name: "Hong Kong Int." },
-  { iata: "TPE", city: "Taipei", name: "Taoyuan" },
-  { iata: "ICN", city: "Seoul", name: "Incheon" },
-  { iata: "DXB", city: "Dubai", name: "Dubai Int." }
+  { iata: "CDG", city: "Paris", name: "Charles de Gaulle" }
 ];
 
 /* --- UI MANIPULATION --- */
@@ -470,12 +639,80 @@ const ApplicationLogic = {
   isSafetyQuotaLockoutEngaged: false,
 
   init() {
-    document.getElementById('ui-app-title').innerText = window.CONFIG.APP_TITLE;
-    document.getElementById('input-origin-iata').value = window.CONFIG.DEFAULT_HOME_ORIGIN_AIRPORT_IATA;
-    
+    this.hydrateConfigStrings();
+    this.calculateDynamicQuota();
     this.setupDateLocks();
     this.setupIataAutocomplete();
     this.renderDashboardState();
+    
+    // Fallback static UI hydration guard
+    const btnSettings = document.getElementById('ui-btn-settings');
+    if (btnSettings && !btnSettings.innerHTML.trim()) btnSettings.innerHTML = "⚙️";
+    
+    FirebaseEngine.init();
+  },
+
+  hydrateConfigStrings() {
+    document.getElementById('ui-app-title').innerText = window.CONFIG.APP_TITLE;
+    document.getElementById('ui-app-version').innerText = window.CONFIG.APP_VERSION;
+    
+    // UI Text
+    document.getElementById('ui-empty-title').innerText = window.CONFIG.EMPTY_STATE_TITLE;
+    document.getElementById('ui-empty-subtitle').innerText = window.CONFIG.EMPTY_STATE_SUBTITLE;
+    document.getElementById('input-dest-iata').placeholder = window.CONFIG.PLACEHOLDER_DESTINATION_IATA;
+    document.getElementById('input-trip-tag').placeholder = window.CONFIG.PLACEHOLDER_TRIP_NAME;
+    
+    // Defaults
+    document.getElementById('input-origin-iata').value = window.CONFIG.DEFAULT_HOME_ORIGIN_AIRPORT_IATA;
+    document.getElementById('input-cabin-class').value = window.CONFIG.DEFAULT_CABIN_CLASS;
+    document.getElementById('input-lock-threshold').value = window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS;
+    
+    // Buttons
+    document.getElementById('ui-btn-add-flight-main').innerHTML = `✈️ ${window.CONFIG.BTN_ADD_FLIGHT.toUpperCase()} 🚀`;
+    document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT;
+    document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
+  },
+
+  calculateDynamicQuota() {
+    // Math.floor: calls remaining / ( (2 anchor checks/day * days left) + sweep buffer )
+    const callsRemaining = window.CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS - this.monthlyApiFetchCounter;
+    const daysLeft = 28; // Hardcoded mock for current window
+    const maxMonitors = Math.floor(callsRemaining / ((2 * daysLeft) + 14));
+    document.getElementById('ui-monitor-max').innerText = maxMonitors;
+  },
+
+  promptFetchOverride() {
+    const val = prompt("Enter updated manual fetch count (0-9999):", this.monthlyApiFetchCounter);
+    if(val !== null && !isNaN(val)) {
+      this.monthlyApiFetchCounter = parseInt(val);
+      document.getElementById('ui-settings-fetch-count').innerText = this.monthlyApiFetchCounter;
+      this.updateTelemetryTray();
+      this.calculateDynamicQuota();
+    }
+  },
+
+  saveSettings() {
+    window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS = parseInt(document.getElementById('input-lock-threshold').value);
+    this.updateTelemetryTray();
+    UIEngine.closeModal('modal-settings');
+  },
+
+  updateTelemetryTray() {
+    const max = window.CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS;
+    const pct = ((this.monthlyApiFetchCounter / max) * 100).toFixed(1);
+    document.getElementById('telemetry-api').innerText = `🟢 API: Ready | ${this.monthlyApiFetchCounter}/${max} (${pct}%)`;
+    
+    const gate = document.getElementById('telemetry-gate');
+    if (this.monthlyApiFetchCounter >= window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS) {
+      gate.innerHTML = `🛡️ Fetch Shield: 🔴 LOCKED (>=${window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS})`;
+      gate.style.color = "var(--danger)";
+    } else if (pct > 80) {
+      gate.innerHTML = `🛡️ Fetch Shield: 🟡 WARNING (>80%)`;
+      gate.style.color = "var(--warning)";
+    } else {
+      gate.innerHTML = `🛡️ Fetch Shield: 🟢 SAFE (<80%)`;
+      gate.style.color = "var(--text-muted)";
+    }
   },
 
   setupDateLocks() {
@@ -485,7 +722,7 @@ const ApplicationLogic = {
     
     depInput.min = today;
     depInput.addEventListener('change', (e) => {
-      retInput.min = e.target.value; // Temporal locking
+      retInput.min = e.target.value; 
       if(retInput.value && retInput.value < e.target.value) retInput.value = e.target.value;
     });
   },
@@ -504,7 +741,7 @@ const ApplicationLogic = {
       
       input.addEventListener('input', (e) => {
         const val = e.target.value.toUpperCase();
-        input.value = val; // Force uppercase
+        input.value = val;
         dropdown.innerHTML = "";
         
         if(val.length < 1) { dropdown.style.display = "none"; return; }
@@ -519,11 +756,8 @@ const ApplicationLogic = {
             div.onclick = () => { input.value = m.iata; dropdown.style.display = "none"; };
             dropdown.appendChild(div);
           });
-        } else {
-          dropdown.style.display = "none";
-        }
+        } else { dropdown.style.display = "none"; }
       });
-      // Close on blur (delayed to allow click)
       input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = "none", 200));
     };
     setup('input-origin-iata', 'dropdown-origin-iata');
@@ -547,6 +781,8 @@ const ApplicationLogic = {
     const fetchBtn = document.getElementById('btn-manual-fetch');
     const routeSelect = document.getElementById('select-active-monitored-route');
 
+    document.getElementById('ui-monitor-count').innerText = this.activeMonitoredRoutesList.length;
+
     if (this.activeMonitoredRoutesList.length === 0) {
       emptyCanvas.classList.remove('hidden');
       activeCanvas.classList.add('hidden');
@@ -558,7 +794,6 @@ const ApplicationLogic = {
       oraclePanel.style.display = "flex";
       fetchBtn.disabled = false;
       
-      // Select logic population
       routeSelect.innerHTML = "";
       this.activeMonitoredRoutesList.forEach((r, idx) => {
         const opt = document.createElement('option');
@@ -570,10 +805,9 @@ const ApplicationLogic = {
   },
 
   initializeNewRoute() {
-    // Collect Data
     const origin = document.getElementById('input-origin-iata').value;
     const dest = document.getElementById('input-dest-iata').value;
-    const currency = document.querySelector('input[name="input-currency-selection"]:checked').value;
+    const currency = document.getElementById('input-currency-selection').value;
     const horizon = parseInt(document.getElementById('input-genesis-sweep-horizon-days').value);
     const tag = document.getElementById('input-trip-tag').value || "Untagged Trip";
 
@@ -581,7 +815,6 @@ const ApplicationLogic = {
       alert("Please ensure Origin and Destination IATA codes are valid."); return;
     }
 
-    // Mock Genesis Sweep & Oracle Calculation
     const routeObj = {
       id: "rt_" + Date.now(),
       tag: tag,
@@ -589,7 +822,7 @@ const ApplicationLogic = {
       dest: dest,
       currency: currency,
       horizon: horizon,
-      currentPrice: Math.floor(Math.random() * 200) + 300, // Mock $300-$500
+      currentPrice: Math.floor(Math.random() * 200) + 300, 
       avgPrice: 420,
       lowBound: 310,
       hiBound: 580
@@ -604,7 +837,6 @@ const ApplicationLogic = {
   },
 
   updateOracleUI(route) {
-    // Badge Math
     const badge = document.getElementById('badge-oracle-recommendation-status');
     if (route.currentPrice < route.avgPrice) {
       const drop = Math.round(((route.avgPrice - route.currentPrice) / route.avgPrice) * 100);
@@ -615,13 +847,11 @@ const ApplicationLogic = {
       badge.innerText = `🟡 HOLD: PRICES ELEVATED`;
     }
 
-    // Details
     document.getElementById('ui-anchor-price').innerText = "$" + route.currentPrice.toFixed(2);
     document.getElementById('ui-currency-label').innerText = route.currency;
     document.getElementById('ui-gauge-horizon').innerText = route.horizon;
     document.getElementById('ui-chart-horizon-label').innerText = route.horizon;
 
-    // Gauge positioning (Mock math: bounds 310 to 580. range = 270)
     const range = route.hiBound - route.lowBound;
     let percent = ((route.currentPrice - route.lowBound) / range) * 100;
     if(percent < 5) percent = 5; if(percent > 95) percent = 95;
@@ -629,22 +859,17 @@ const ApplicationLogic = {
     document.getElementById('ui-gauge-needle').style.left = `${percent}%`;
     document.getElementById('ui-gauge-low-bounds').innerText = `$${route.lowBound}`;
 
-    // Mock Chart Bars
     const chart = document.getElementById('ui-mock-chart-container');
     chart.innerHTML = "";
     for(let i=0; i < route.horizon; i++) {
       const bar = document.createElement('div');
       bar.className = (i === 0 || i === route.horizon - 1) ? "chart-bar anchor" : "chart-bar";
-      
-      // Elastic interpolation visual mock
       const heightBase = (route.currentPrice / route.hiBound) * 100;
       const flux = Math.sin(i) * 10;
       bar.style.height = `${Math.max(10, Math.min(100, heightBase + flux))}%`;
-      
       chart.appendChild(bar);
     }
 
-    // Modal UI prep
     document.getElementById('ui-trueup-required').innerText = route.horizon;
     document.getElementById('ui-trueup-projected').innerText = this.monthlyApiFetchCounter + route.horizon;
   },
@@ -652,7 +877,7 @@ const ApplicationLogic = {
   executeManualHorizonTrueUp() {
     alert("Executing backend Cloud Function sync via Ignav...");
     this.monthlyApiFetchCounter += parseInt(document.getElementById('ui-trueup-required').innerText);
-    document.getElementById('telemetry-api').innerText = `🟢 API: Ready | ${this.monthlyApiFetchCounter}/1000 (${(this.monthlyApiFetchCounter/10).toFixed(1)}%)`;
+    this.updateTelemetryTray();
     UIEngine.closeModal('modal-true-up');
   },
 
