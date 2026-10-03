@@ -9,8 +9,8 @@ window.CONFIG = {
   /* ========================================================================
      SECTION 1: APP IDENTITY (Alphabetical)
      ======================================================================== */
-  APP_TITLE: "✨ Faretasmic!",
-  APP_VERSION: "v0.2",
+  APP_TITLE: "✨ Faretasmic!!!",
+  APP_VERSION: "v0.3",
 
   /* ========================================================================
      SECTION 2: FIREBASE CONFIGURATION
@@ -28,20 +28,23 @@ window.CONFIG = {
   MAXIMUM_FREE_TIER_MONTHLY_CALLS: 1000,
 
   /* ========================================================================
-     SECTION 4: DEFAULTS (Alphabetical)
+     SECTION 4: DEFAULTS & QA TOGGLES (Alphabetical)
      ======================================================================== */
   DEFAULT_CABIN_CLASS: "economy",
   DEFAULT_HOME_ORIGIN_AIRPORT_IATA: "SFO",
+  ENABLE_DEV_DATA_SHUFFLE: true,
 
   /* ========================================================================
      SECTION 5: CUSTOM UI TEXT STRINGS (Alphabetical)
      ======================================================================== */
-  BTN_ADD_FLIGHT: "Add Flight",
+  BTN_ADD_FLIGHT_EMPTY: "Add Flight",
+  BTN_ADD_FLIGHT_MAIN: "Add Flight",
   BTN_SETTINGS: "Settings",
   BTN_START_TRACKING: "Start Tracking",
   BTN_THEME: "Theme",
   EMPTY_STATE_SUBTITLE: "Configure a route to begin price surveillance.",
   EMPTY_STATE_TITLE: "🔭 No Flights Monitored",
+  PLACEHOLDER_ADD_CARRIER: "+ Add Carrier...",
   PLACEHOLDER_DESTINATION_IATA: "Select Destination",
   PLACEHOLDER_TRIP_NAME: "e.g. Joe's Vacation"
 };
@@ -97,43 +100,28 @@ window.CONFIG = {
 /* --- 2. GLOBAL RESETS & NORMALIZATION --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { 
-  background: var(--bg-base); 
-  color: var(--text-main); 
-  font-family: var(--font-main); 
-  /* Isolate transitions to prevent latency */
-  transition: background-color 0.15s ease, color 0.15s ease; 
-  overflow-x: hidden; 
+  background: var(--bg-base); color: var(--text-main); font-family: var(--font-main); 
+  transition: background-color 0.15s ease, color 0.15s ease; overflow-x: hidden; 
 }
 body.modal-open { overflow: hidden; }
 h1, h2, h3 { font-family: var(--font-heading); }
 
 /* Form Elements Normalization */
 button, input, select { 
-  font-family: var(--font-main); 
-  outline: none; 
-  border: 1px solid var(--border); 
-  border-radius: var(--radius); 
-  background: var(--bg-input); 
-  color: var(--text-main);
-  touch-action: manipulation; /* Eliminate mobile tap delay */
+  font-family: var(--font-main); outline: none; border: 1px solid var(--border); 
+  border-radius: var(--radius); background: var(--bg-input); color: var(--text-main);
+  touch-action: manipulation; 
 }
 select option { background: var(--bg-surface); color: var(--text-main); }
-
 button { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; white-space: normal; }
 button:hover { border-color: var(--border-hover); background: var(--bg-surface-hover); }
 
 /* High Contrast Calendar Picker & Native color-scheme */
 input[type="date"] { color-scheme: dark light; }
-::-webkit-calendar-picker-indicator { 
-  filter: invert(0.8); 
-  opacity: 0.9; 
-  cursor: pointer; 
-}
+::-webkit-calendar-picker-indicator { filter: invert(0.8); opacity: 0.9; cursor: pointer; }
 [data-theme="minimalist-light"] ::-webkit-calendar-picker-indicator,
 [data-theme="modern-light"] ::-webkit-calendar-picker-indicator,
-[data-theme="cozy-village"] ::-webkit-calendar-picker-indicator {
-  filter: invert(0.2); 
-}
+[data-theme="cozy-village"] ::-webkit-calendar-picker-indicator { filter: invert(0.2); }
 
 /* Font Adjustments */
 [data-theme="retro-arcade"] input, [data-theme="retro-arcade"] select, [data-theme="retro-arcade"] button { font-size: 11px; }
@@ -149,42 +137,21 @@ input[type="date"] { color-scheme: dark light; }
 .app-container { max-width: 1200px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
 
 /* Responsive System Tray */
-.header-tray { 
-  display: flex; 
-  flex-wrap: wrap; 
-  align-items: center; 
-  justify-content: space-between; 
-  background: var(--bg-surface); 
-  padding: 15px; 
-  border-radius: var(--radius); 
-  border: 1px solid var(--border); 
-  gap: 10px; 
-}
+.header-tray { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); gap: 10px; }
 .header-brand { display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
 .app-version { font-size: 0.65em; opacity: 0.75; font-family: var(--font-main); }
 .header-actions { display: flex; gap: 8px; }
 
-.telemetry-tray { 
-  display: flex; 
-  flex: 1;
-  justify-content: center; 
-  align-items: center;
-  font-size: 13px; 
-  color: var(--text-muted); 
-  gap: 12px; 
-}
-.telemetry-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+/* High-Density 2-Row Telemetry */
+.telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 15px; }
+.telemetry-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.telemetry-indicator { font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.telemetry-text-group { display: flex; flex-direction: column; justify-content: center; line-height: 1.2; text-align: left; }
+.telemetry-label { font-size: 11px; font-weight: 600; color: var(--text-main); }
+.telemetry-sub { font-size: 10px; color: var(--text-muted); }
 
 @media (max-width: 880px) {
-  .telemetry-tray { 
-    flex-basis: 100%; 
-    order: 3; 
-    justify-content: space-between; 
-    background: var(--bg-input);
-    padding: 10px;
-    border-radius: var(--radius);
-    margin-top: 5px;
-  }
+  .telemetry-tray { flex-basis: 100%; order: 3; justify-content: space-between; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin-top: 5px; }
 }
 @media (max-width: 480px) {
   .telemetry-tray { flex-wrap: wrap; justify-content: flex-start; }
@@ -192,7 +159,6 @@ input[type="date"] { color-scheme: dark light; }
 
 .main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 @media(min-width: 900px) { .main-grid { grid-template-columns: 350px 1fr; } }
-
 .panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 .panel-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
 
@@ -200,6 +166,8 @@ input[type="date"] { color-scheme: dark light; }
 .primary-btn { background: var(--accent); color: var(--text-inverse); font-weight: bold; padding: 12px; border: none; font-size: 14px; text-align: center; }
 .primary-btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 .secondary-btn { padding: 10px; font-size: 13px; font-weight: bold; }
+.btn-group-equal { display: flex; gap: 10px; width: 100%; }
+.btn-group-equal > button { flex: 1 1 0; min-height: 42px; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
 
 .status-badge { display: inline-block; padding: 6px 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
 .status-buy { background: var(--success); color: var(--text-inverse); }
@@ -214,9 +182,20 @@ input[type="date"] { color-scheme: dark light; }
 .gauge-marker { position: absolute; top: -2px; width: 2px; height: 28px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 .gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
 
-.mock-chart { height: 150px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px; gap: 4px; }
-.chart-bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; min-height: 10px; position: relative; }
+.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; }
+.y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 50px; }
+.mock-chart { flex: 1; height: 160px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px 10px 28px 10px; gap: 4px; position: relative; }
+.chart-bar-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; }
+.chart-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; position: relative; min-height: 4px; transition: height 0.3s ease; }
 .chart-bar.anchor { background: var(--success); opacity: 1; }
+.x-axis-label { position: absolute; bottom: -24px; font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: center; line-height: 1.1; }
+.x-axis-label .date { display: block; font-weight: bold; color: var(--text-main); font-size: 10px; }
+
+/* Itinerary Details & History Log */
+.details-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+@media(min-width: 600px) { .details-grid { grid-template-columns: 1fr 1fr; } }
+.history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; }
+.history-list li { list-style-type: disc; margin-left: 15px; }
 
 /* --- 5. MODALS & FORMS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
@@ -226,11 +205,20 @@ input[type="date"] { color-scheme: dark light; }
 .modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
 .modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
+/* Theme Modal Locks */
+#modal-theme .modal-content { width: 580px; max-width: 92vw; }
+#modal-theme .primary-btn, #modal-theme .secondary-btn { height: 52px; min-height: 52px; max-height: 52px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: normal; text-align: center; line-height: 1.2; }
+
 .form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
-.form-group label { font-size: 12px; color: var(--text-muted); }
+.form-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
 .form-control { padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; height: 38px; min-height: 38px; -webkit-appearance: none; appearance: none; }
 .form-row { display: flex; gap: 10px; align-items: flex-start; }
 .form-row > * { flex: 1; min-width: 0; }
+
+/* Custom Dropdown Wrapper */
+.select-wrapper { position: relative; display: flex; flex: 1; }
+.select-wrapper select { width: 100%; padding-right: 30px; appearance: none; -webkit-appearance: none; }
+.select-wrapper::after { content: "▼"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 10px; color: var(--text-main); opacity: 0.7; }
 
 .autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; max-height: 150px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); }
 .autocomplete-item { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); }
@@ -258,19 +246,47 @@ input[type="date"] { color-scheme: dark light; }
   <header class="header-tray">
     <div class="header-brand">
       <h2 id="ui-app-title">✨ Faretasmic!</h2>
-      <span id="ui-app-version" class="app-version">v0.2</span>
+      <span id="ui-app-version" class="app-version">v0.3</span>
     </div>
     
     <div class="telemetry-tray">
-      <div class="telemetry-item" id="telemetry-api">🟢 API: Ready | 412/1000 (41.2%)</div>
-      <div class="telemetry-item" id="telemetry-gate">🛡️ Fetch Shield: 🟢 SAFE (<95%)</div>
-      <div class="telemetry-item" id="telemetry-db">🟢 Database: Synced</div>
-      <div class="telemetry-item" id="telemetry-cadence">⏱️ Last Fetch: DAILY 02:00 UTC</div>
+      <!-- 1. API -->
+      <div class="telemetry-item">
+        <div class="telemetry-indicator" id="ui-icon-api">🟢</div>
+        <div class="telemetry-text-group">
+          <div class="telemetry-label" id="ui-lbl-api">API: Ready</div>
+          <div class="telemetry-sub" id="ui-sub-api">412/1000 Calls</div>
+        </div>
+      </div>
+      <!-- 2. Gate -->
+      <div class="telemetry-item">
+        <div class="telemetry-indicator" id="ui-icon-gate">🟢</div>
+        <div class="telemetry-text-group">
+          <div class="telemetry-label">🛡️ Fetch Shield</div>
+          <div class="telemetry-sub" id="ui-sub-gate">SHIELDS AT THE READY</div>
+        </div>
+      </div>
+      <!-- 3. DB -->
+      <div class="telemetry-item">
+        <div class="telemetry-indicator" id="ui-icon-db">🟢</div>
+        <div class="telemetry-text-group">
+          <div class="telemetry-label">Database</div>
+          <div class="telemetry-sub" id="ui-sub-db">Synced</div>
+        </div>
+      </div>
+      <!-- 4. Sync -->
+      <div class="telemetry-item">
+        <div class="telemetry-indicator">⏱️</div>
+        <div class="telemetry-text-group">
+          <div class="telemetry-label">Last Sync</div>
+          <div class="telemetry-sub">Daily 02:00 UTC</div>
+        </div>
+      </div>
     </div>
 
     <div class="header-actions">
       <button class="secondary-btn btn-theme" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')" title="Theme">🎨</button>
-      <button class="secondary-btn btn-settings" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙️️</button>
+      <button class="secondary-btn btn-settings" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙</button>
     </div>
   </header>
 
@@ -280,31 +296,36 @@ input[type="date"] { color-scheme: dark light; }
     <!-- Left Column: Controls & Oracle -->
     <div class="left-col" style="display: flex; flex-direction: column; gap: 15px;">
       
-      <div class="panel">
+      <div class="panel" style="margin-bottom: 12px;">
         <div class="panel-title">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
-        <select class="form-control" id="select-active-monitored-route">
-          <option value="none">-- Select Route --</option>
-        </select>
-        <div class="form-row">
-          <button class="primary-btn" id="ui-btn-add-flight-main" onclick="UIEngine.openModal('modal-add-flight')">✈️ ADD FLIGHT 🚀</button>
+        <div class="select-wrapper">
+          <select class="form-control" id="select-active-monitored-route">
+            <option value="none">-- Select Route --</option>
+          </select>
+        </div>
+        <div class="form-row btn-group-equal" style="margin-top: 5px;">
+          <button class="primary-btn" id="ui-btn-add-flight-main" onclick="UIEngine.openModal('modal-add-flight')">Add Flight</button>
           <button class="secondary-btn" onclick="UIEngine.openModal('modal-true-up')" id="btn-manual-fetch" disabled>⚡ Fetch</button>
+          <button class="secondary-btn" onclick="ApplicationLogic.shuffleData()" id="ui-btn-shuffle" style="display: none; background: var(--bg-surface-hover);">🎲 Shuffle QA</button>
         </div>
       </div>
 
       <div class="panel" id="panel-oracle" style="display: none;">
         <div class="panel-title">Predictive Oracle Engine</div>
         <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 30D BASELINE</div>
-        <div style="font-size: 14px; margin-top: 10px;">
-          Anchor Fares: <strong id="ui-anchor-price">$0.00</strong> (<span id="ui-currency-label">USD</span>)
+        
+        <div style="font-size: 13px; margin-top: 10px; line-height: 1.5;">
+          <div>Outbound Anchor: <strong id="ui-anchor-outbound" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
+          <div>Return Anchor: <strong id="ui-anchor-return" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
         </div>
         
-        <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted);">
+        <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted); font-weight: bold;">
           HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET):
         </div>
         <div class="gauge-container" id="container-price-spectrum-gauge">
-          <div class="gauge-segment gauge-low" id="ui-gauge-low-bounds">$320-$350</div>
+          <div class="gauge-segment gauge-low" id="ui-gauge-low-bounds">$320</div>
           <div class="gauge-segment gauge-typ">TYPICAL</div>
-          <div class="gauge-segment gauge-hi">HIGH</div>
+          <div class="gauge-segment gauge-hi" id="ui-gauge-hi-bounds">$580</div>
           <div class="gauge-marker" id="ui-gauge-needle" style="left: 20%;"></div>
         </div>
       </div>
@@ -323,32 +344,56 @@ input[type="date"] { color-scheme: dark light; }
 
       <!-- Active Dashboard (Hidden initially) -->
       <div id="active-dashboard-canvas" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
+        
         <div class="panel">
-          <div class="panel-title"><span id="ui-chart-horizon-label">14</span>-DAY ELASTIC TRAJECTORY (INTERPOLATED)</div>
-          <div class="mock-chart" id="ui-mock-chart-container">
-            <!-- Bars injected by JS -->
+          <div class="panel-title"><span id="ui-chart-horizon-label">14</span>-DAY PRICE TRAJECTORY</div>
+          
+          <div class="chart-wrapper">
+            <div class="y-axis">
+              <span style="font-weight: bold; color: var(--text-main);">Price (<span class="ui-currency-label">USD</span>)</span>
+              <span id="ui-y-axis-high">$580</span>
+              <span id="ui-y-axis-mid">$445</span>
+              <span id="ui-y-axis-low">$310</span>
+            </div>
+            <div class="mock-chart" id="ui-mock-chart-container">
+              <!-- Bars injected by JS -->
+            </div>
           </div>
+
           <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-            <span>Genesis Sweep</span>
-            <span>Anchor (Today)</span>
+            <span><strong style="color:var(--success);">■</strong> Outbound Anchor</span>
+            <span><strong style="color:var(--success);">■</strong> Return Anchor</span>
           </div>
         </div>
 
         <div class="panel">
-          <div class="panel-title">Selected Itinerary Details</div>
-          <div style="font-size: 13px; line-height: 1.6;" id="ui-itinerary-details">
-            🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 ➔ 17:05<br>
-            🛬 Return: JL 001 (HND ➔ SFO) 14:15 ➔ 17:50
+          <div class="details-grid">
+            <div>
+              <div class="panel-title">Selected Itinerary Details</div>
+              <div style="font-size: 13px; line-height: 1.6; margin-top: 5px;" id="ui-itinerary-details">
+                🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 ➔ 17:05<br>
+                🛬 Return: JL 001 (HND ➔ SFO) 14:15 ➔ 17:50
+              </div>
+            </div>
+            <div>
+              <div class="panel-title">Flight Number History Log</div>
+              <ul class="history-list" id="ui-history-log">
+                <!-- Log injected by JS -->
+              </ul>
+            </div>
           </div>
         </div>
 
         <div class="form-row">
           <button class="secondary-btn" style="background: var(--success); color: var(--bg-base);">💳 BOOK NOW</button>
-          <button class="secondary-btn">🌐 GOOGLE FLIGHTS</button>
+          <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+            <button class="secondary-btn">🌐 GOOGLE FLIGHTS</button>
+            <div style="font-size: 10px; color: var(--text-muted); text-align: center;">Open live search in Google Flights (Zero API Cost)</div>
+          </div>
         </div>
         <div class="form-row">
           <button class="secondary-btn">📥 EXPORT CSV</button>
-          <button class="secondary-btn" style="color: var(--danger);" onclick="ApplicationLogic.untrackRoute()">🗑️ UNTRACK</button>
+          <button class="secondary-btn" style="color: var(--danger); border-color: var(--danger);" onclick="UIEngine.openModal('modal-confirm-untrack')">🗑️ UNTRACK</button>
         </div>
       </div>
 
@@ -362,10 +407,10 @@ input[type="date"] { color-scheme: dark light; }
 
 <!-- 1. Theme Picker Modal -->
 <div class="modal-overlay" id="modal-theme">
-  <div class="modal-content" style="max-width: 580px;">
+  <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">🎨 SELECT THEME</span>
-      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
     </div>
     <div class="modal-body">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -389,100 +434,109 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">✈️ ADD FLIGHT 🚀</span>
-      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-add-flight')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-add-flight')">✕</button>
     </div>
     <div class="modal-body">
       
       <!-- Row 1 -->
       <div class="form-group">
-        <label>TRIP NAME:</label>
+        <label>TRIP NAME</label>
         <input type="text" class="form-control" id="input-trip-tag" placeholder="e.g. Joe's Vacation">
       </div>
 
       <!-- Row 2 -->
-      <div class="form-row">
-        <div class="form-group">
-          <label>TRIP TYPE:</label>
-          <select class="form-control" id="input-trip-type" onchange="ApplicationLogic.toggleReturnDate()">
-            <option value="round-trip">Round-Trip</option>
-            <option value="one-way">One-Way</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>BASE CURRENCY (⚠️ CANNOT BE CHANGED LATER):</label>
-          <select class="form-control" id="input-currency-selection">
-            <option value="USD">USD ($)</option>
-            <option value="CAD">CAD ($)</option>
-          </select>
+      <div class="form-group">
+        <label>BASE CURRENCY (⚠️ CANNOT BE CHANGED LATER)</label>
+        <div style="display: flex; gap: 20px; align-items: center; height: 38px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--text-main); text-transform:none;"><input type="radio" name="input-currency-selection" value="USD" checked> USD ($)</label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:14px; color:var(--text-main); text-transform:none;"><input type="radio" name="input-currency-selection" value="CAD"> CAD ($)</label>
         </div>
       </div>
 
       <!-- Row 3 -->
-      <div class="form-group">
-        <label>JUNK FARE FILTER:</label>
-        <select class="form-control" id="input-stop-filter">
-          <option value="nonstop">Nonstop Only</option>
-          <option value="1stop">Max 1 Stop</option>
-          <option value="any">Any Stops</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>TRIP TYPE</label>
+          <div class="select-wrapper">
+            <select class="form-control" id="input-trip-type" onchange="ApplicationLogic.toggleReturnDate()">
+              <option value="round-trip">Round-Trip</option>
+              <option value="one-way">One-Way</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>JUNK FARE FILTER</label>
+          <div class="select-wrapper">
+            <select class="form-control" id="input-stop-filter">
+              <option value="nonstop">Nonstop Only</option>
+              <option value="1stop">Max 1 Stop</option>
+              <option value="any">Any Stops</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- Row 4 -->
       <div class="form-row">
         <div class="form-group">
-          <label>ORIGIN (IATA):</label>
+          <label>ORIGIN (IATA)</label>
           <input type="text" class="form-control iata-input" id="input-origin-iata" maxlength="3" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-origin-iata"></div>
         </div>
         <div class="form-group">
-          <label>DESTINATION (IATA):</label>
-          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off" placeholder="Select Destination">
+          <label>DESTINATION (IATA)</label>
+          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-dest-iata"></div>
         </div>
       </div>
 
+      <!-- Row 5 -->
       <div class="form-row">
         <div class="form-group">
-          <label>DEPARTURE DATE:</label>
+          <label>DEPARTURE DATE</label>
           <input type="date" class="form-control" id="input-departure-date">
         </div>
         <div class="form-group">
-          <label>RETURN DATE:</label>
+          <label>RETURN DATE</label>
           <input type="date" class="form-control" id="input-return-date">
         </div>
       </div>
 
+      <!-- Row 6 -->
       <div class="form-row">
         <div class="form-group">
-          <label>PASSENGERS:</label>
+          <label>PASSENGERS (1-10)</label>
           <input type="number" class="form-control" id="input-passenger-count" min="1" max="10" value="1">
         </div>
         <div class="form-group">
-          <label>CABIN CLASS:</label>
-          <select class="form-control" id="input-cabin-class">
-            <option value="economy">Economy</option>
-            <option value="premium">Premium Economy</option>
-            <option value="business">Business</option>
-            <option value="first">First</option>
-          </select>
+          <label>CABIN CLASS</label>
+          <div class="select-wrapper">
+            <select class="form-control" id="input-cabin-class">
+              <option value="economy">Economy</option>
+              <option value="premium">Premium Economy</option>
+              <option value="business">Business</option>
+              <option value="first">First</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      <!-- Row 7 -->
       <div class="form-group">
         <label>GENESIS SWEEP HORIZON (Days to model): <span id="ui-slider-val" style="color: var(--accent); font-weight: bold;">14</span></label>
         <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="14" style="width: 100%; margin-top: 5px;" oninput="document.getElementById('ui-slider-val').innerText = this.value">
       </div>
 
+      <!-- Row 8 -->
       <div class="form-group">
-        <label>TARGET AIRLINES (Multi-Select):</label>
+        <label>TARGET AIRLINES (Multi-Select)</label>
         <div class="form-row" style="align-items: center;">
-          <select class="form-control" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)" style="flex: 0 0 160px; max-width: 160px;">
-            <option value="">+ Add Carrier...</option>
-            <option value="AA">American Airlines (AA)</option>
-            <option value="AC">Air Canada (AC)</option>
-            <option value="NH">All Nippon Airways (NH)</option>
-            <option value="CX">Cathay Pacific (CX)</option>
-          </select>
+          <div class="select-wrapper" style="flex: 0 0 160px; max-width: 160px;">
+            <select class="form-control" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)">
+              <option value="" disabled selected id="ui-opt-add-carrier">+ Add Carrier...</option>
+              <!-- Populated by JS -->
+            </select>
+          </div>
           <div class="pill-container" id="container-airline-tags" style="flex: 1; border: none; background: transparent; padding: 0;">
             <div class="airline-pill">DL <span onclick="this.parentElement.remove()">✕</span></div>
             <div class="airline-pill">JL <span onclick="this.parentElement.remove()">✕</span></div>
@@ -503,30 +557,38 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">⚙️ SETTINGS</span>
-      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-settings')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-settings')">✕</button>
     </div>
     <div class="modal-body">
+      
       <div class="form-group">
-        <label>MONTHLY USAGE TELEMETRY:</label>
-        <div style="font-size: 14px;">Current Window: Oct 01 - Oct 31, 2026</div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
-          <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: <span id="ui-settings-fetch-count">412</span> / 1000</div>
-          <button class="secondary-btn" style="padding: 4px 8px; font-size: 11px;" onclick="ApplicationLogic.promptFetchOverride()">EDIT</button>
+        <label>IGNAV USAGE TELEMETRY</label>
+        <div style="padding-left: 14px; margin-top: 8px;">
+          <div style="font-size: 14px; color: var(--text-main);">Current Window: Oct 01 - Oct 31, 2026</div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+            <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: <span id="ui-settings-fetch-count">412</span> / 1000</div>
+            <button class="secondary-btn" style="padding: 4px 8px; font-size: 11px;" onclick="UIEngine.openModal('modal-fetch-override')">EDIT</button>
+          </div>
         </div>
       </div>
+      
       <hr style="border: 0; border-top: 1px solid var(--border);">
+      
       <div class="form-group">
-        <label>FAIL-SAFE HARD LOCK:</label>
-        <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
-          <input type="checkbox" checked> Enable Automatic Quota Gate
-        </label>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Safety tripwire: Automatically halts scheduled fetches when the threshold is hit.</div>
-        <div class="form-row" style="margin-top: 10px; align-items: center;">
-          <input type="number" class="form-control" id="input-lock-threshold" min="1" max="9999" value="950" style="max-width: 90px; text-align: center;">
-          <span style="font-size: 13px; color: var(--text-muted);">Calls Threshold</span>
+        <label>FAIL-SAFE HARD LOCK</label>
+        <div style="padding-left: 14px; margin-top: 8px;">
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-main); text-transform:none;">
+            <input type="checkbox" checked> Enable Fetch Shield
+          </label>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Safety tripwire: Automatically halts scheduled fetches when the threshold is hit.</div>
+          <div class="form-row" style="margin-top: 12px; align-items: center;">
+            <input type="number" class="form-control" id="input-lock-threshold" min="1" max="9999" value="950" style="max-width: 90px; text-align: center;">
+            <span style="font-size: 13px; color: var(--text-muted);">Calls Threshold</span>
+          </div>
+          <div style="font-size: 13px; color: var(--success); margin-top: 12px;" id="ui-settings-shield-status">🟢 SHIELDS AT THE READY (538 calls remaining)</div>
         </div>
-        <div style="font-size: 13px; color: var(--success); margin-top: 10px;">🟢 UNLOCKED (538 calls remaining)</div>
       </div>
+
     </div>
     <div class="modal-footer" style="justify-content: space-between;">
       <button class="secondary-btn" onclick="UIEngine.closeModal('modal-settings')">CLOSE</button>
@@ -537,10 +599,10 @@ input[type="date"] { color-scheme: dark light; }
 
 <!-- 4. Manual True-Up Modal -->
 <div class="modal-overlay" id="modal-true-up">
-  <div class="modal-content">
+  <div class="modal-content" style="max-width: 480px;">
     <div class="modal-header">
       <span>⚠️ MANUAL HORIZON TRUE-UP</span>
-      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">✕</button>
+      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-true-up')">✕</button>
     </div>
     <div class="modal-body">
       <p style="font-size: 14px; line-height: 1.5;">Executing this manual sweep will overwrite the current elastically interpolated data with live Ignav API pricing.</p>
@@ -556,6 +618,42 @@ input[type="date"] { color-scheme: dark light; }
     <div class="modal-footer">
       <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">CANCEL</button>
       <button class="primary-btn" onclick="ApplicationLogic.executeManualHorizonTrueUp()">EXECUTE TRUE-UP</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Fetch Override Modal -->
+<div class="modal-overlay" id="modal-fetch-override">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <span>📊 OVERRIDE FETCH COUNT</span>
+      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-fetch-override')">✕</button>
+    </div>
+    <div class="modal-body" style="align-items: center; gap: 20px;">
+      <label style="font-size: 13px; color: var(--text-muted);">Enter verified billing cycle usage:</label>
+      <input type="number" class="form-control" id="input-override-fetches" min="0" max="9999" value="412" style="text-align: center; font-size: 24px; font-weight: bold; height: 50px;">
+    </div>
+    <div class="modal-footer">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-fetch-override')">CANCEL</button>
+      <button class="primary-btn" onclick="ApplicationLogic.saveFetchOverride()">UPDATE USAGE</button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. Confirm Untrack Modal -->
+<div class="modal-overlay" id="modal-confirm-untrack">
+  <div class="modal-content" style="max-width: 400px; border-color: var(--danger);">
+    <div class="modal-header" style="color: var(--danger);">
+      <span>⚠️ CONFIRM UNTRACK</span>
+      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-confirm-untrack')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 14px; line-height: 1.5;">Are you sure you want to untrack this route? All historical pricing data, trajectory records, and linked Firestore documents will be permanently purged.</p>
+      <p style="font-size: 13px; color: var(--text-muted); font-weight: bold;">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-confirm-untrack')">CANCEL</button>
+      <button class="primary-btn" style="background: var(--danger);" onclick="ApplicationLogic.executeUntrackRoute()">PERMANENTLY UNTRACK</button>
     </div>
   </div>
 </div>
@@ -578,10 +676,7 @@ const ThemeEngine = {
       const keys = this.getThemeKeys();
       resolvedTheme = keys[Math.floor(Math.random() * keys.length)];
     }
-    // Instant paint wrapping
-    requestAnimationFrame(() => {
-      document.body.setAttribute('data-theme', resolvedTheme);
-    });
+    requestAnimationFrame(() => { document.body.setAttribute('data-theme', resolvedTheme); });
     return resolvedTheme;
   },
   setTheme(themeKey) {
@@ -591,44 +686,48 @@ const ThemeEngine = {
   init() { this.applyTheme(this.getActiveTheme()); }
 };
 
-/* --- FIREBASE HYDRATION ENGINE (PREP) --- */
+/* --- FIREBASE HYDRATION ENGINE --- */
 const FirebaseEngine = {
-  app: null,
-  db: null,
+  app: null, db: null,
   init() {
     try {
       if (typeof firebase !== 'undefined') {
         this.app = firebase.initializeApp(window.CONFIG.FIREBASE);
         this.db = firebase.firestore();
-        console.log("Firebase initialized. Awaiting live listeners (v0.3).");
+        console.log("Firebase initialized. Awaiting live listeners (v0.4).");
       }
-    } catch(e) {
-      console.warn("Firebase offline or credentials missing. Falling back to local state.", e);
-    }
+    } catch(e) { console.warn("Firebase offline. Utilizing local state.", e); }
   }
 };
 
-/* --- IATA AIRPORT DICTIONARY --- */
+/* --- MASTER DICTIONARIES --- */
 const AIRPORT_DICTIONARY = [
-  { iata: "SFO", city: "San Francisco", name: "SFO Int." },
-  { iata: "JFK", city: "New York", name: "John F. Kennedy" },
-  { iata: "LAX", city: "Los Angeles", name: "LAX Int." },
-  { iata: "HND", city: "Tokyo", name: "Haneda" },
-  { iata: "NRT", city: "Tokyo", name: "Narita" },
-  { iata: "LHR", city: "London", name: "Heathrow" },
-  { iata: "CDG", city: "Paris", name: "Charles de Gaulle" }
+  { iata: "SFO", city: "San Francisco", name: "SFO Int." }, { iata: "JFK", city: "New York", name: "John F. Kennedy" },
+  { iata: "LAX", city: "Los Angeles", name: "LAX Int." }, { iata: "ORD", city: "Chicago", name: "O'Hare" },
+  { iata: "SEA", city: "Seattle", name: "Seattle-Tacoma" }, { iata: "HND", city: "Tokyo", name: "Haneda" },
+  { iata: "NRT", city: "Tokyo", name: "Narita" }, { iata: "LHR", city: "London", name: "Heathrow" },
+  { iata: "CDG", city: "Paris", name: "Charles de Gaulle" }, { iata: "YYZ", city: "Toronto", name: "Pearson Int." },
+  { iata: "YVR", city: "Vancouver", name: "Vancouver Int." }, { iata: "YUL", city: "Montreal", name: "Trudeau" },
+  { iata: "YYC", city: "Calgary", name: "Calgary Int." }, { iata: "YOW", city: "Ottawa", name: "Macdonald-Cartier" }
+];
+
+const AIRLINE_DICTIONARY = [
+  { code: "AC", name: "Air Canada (AC)" }, { code: "WS", name: "WestJet (WS)" },
+  { code: "DL", name: "Delta Air Lines (DL)" }, { code: "UA", name: "United Airlines (UA)" },
+  { code: "AA", name: "American Airlines (AA)" }, { code: "AS", name: "Alaska Airlines (AS)" },
+  { code: "B6", name: "JetBlue Airways (B6)" }, { code: "WN", name: "Southwest Airlines (WN)" },
+  { code: "NH", name: "All Nippon Airways (NH)" }, { code: "JL", name: "Japan Airlines (JL)" },
+  { code: "SQ", name: "Singapore Airlines (SQ)" }, { code: "CX", name: "Cathay Pacific (CX)" },
+  { code: "BA", name: "British Airways (BA)" }, { code: "AF", name: "Air France (AF)" },
+  { code: "LH", name: "Lufthansa (LH)" }, { code: "KE", name: "Korean Air (KE)" },
+  { code: "OZ", name: "Asiana Airlines (OZ)" }, { code: "CI", name: "China Airlines (CI)" },
+  { code: "BR", name: "EVA Air (BR)" }
 ];
 
 /* --- UI MANIPULATION --- */
 const UIEngine = {
-  openModal(id) { 
-    document.getElementById(id).classList.add('active'); 
-    document.body.classList.add('modal-open');
-  },
-  closeModal(id) { 
-    document.getElementById(id).classList.remove('active'); 
-    document.body.classList.remove('modal-open');
-  }
+  openModal(id) { document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open'); },
+  closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open'); }
 };
 
 /* --- CORE APPLICATION LOGIC & ORACLE ENGINE --- */
@@ -636,18 +735,20 @@ const ApplicationLogic = {
   activeMonitoredRoutesList: [],
   currentlySelectedRouteId: null,
   monthlyApiFetchCounter: 412,
-  isSafetyQuotaLockoutEngaged: false,
 
   init() {
     this.hydrateConfigStrings();
+    this.populateAirlineDropdown();
     this.calculateDynamicQuota();
     this.setupDateLocks();
     this.setupIataAutocomplete();
     this.renderDashboardState();
     
-    // Fallback static UI hydration guard
+    // Fallback static UI hydration guards
     const btnSettings = document.getElementById('ui-btn-settings');
     if (btnSettings && !btnSettings.innerHTML.trim()) btnSettings.innerHTML = "⚙️";
+    const btnTheme = document.getElementById('ui-btn-theme');
+    if (btnTheme && !btnTheme.innerHTML.trim()) btnTheme.innerHTML = "🎨";
     
     FirebaseEngine.init();
   },
@@ -656,38 +757,49 @@ const ApplicationLogic = {
     document.getElementById('ui-app-title').innerText = window.CONFIG.APP_TITLE;
     document.getElementById('ui-app-version').innerText = window.CONFIG.APP_VERSION;
     
-    // UI Text
     document.getElementById('ui-empty-title').innerText = window.CONFIG.EMPTY_STATE_TITLE;
     document.getElementById('ui-empty-subtitle').innerText = window.CONFIG.EMPTY_STATE_SUBTITLE;
     document.getElementById('input-dest-iata').placeholder = window.CONFIG.PLACEHOLDER_DESTINATION_IATA;
     document.getElementById('input-trip-tag').placeholder = window.CONFIG.PLACEHOLDER_TRIP_NAME;
+    document.getElementById('ui-opt-add-carrier').innerText = window.CONFIG.PLACEHOLDER_ADD_CARRIER;
     
-    // Defaults
     document.getElementById('input-origin-iata').value = window.CONFIG.DEFAULT_HOME_ORIGIN_AIRPORT_IATA;
     document.getElementById('input-cabin-class').value = window.CONFIG.DEFAULT_CABIN_CLASS;
     document.getElementById('input-lock-threshold').value = window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS;
     
-    // Buttons
-    document.getElementById('ui-btn-add-flight-main').innerHTML = `✈️ ${window.CONFIG.BTN_ADD_FLIGHT.toUpperCase()} 🚀`;
-    document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT;
+    document.getElementById('ui-btn-add-flight-main').innerHTML = `✈️ ${window.CONFIG.BTN_ADD_FLIGHT_MAIN.toUpperCase()} 🚀`;
+    document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT_EMPTY;
     document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
+
+    if(window.CONFIG.ENABLE_DEV_DATA_SHUFFLE) {
+      document.getElementById('ui-btn-shuffle').style.display = "flex";
+    }
+  },
+
+  populateAirlineDropdown() {
+    const select = document.getElementById('input-add-airline');
+    AIRLINE_DICTIONARY.forEach(air => {
+      const opt = document.createElement('option');
+      opt.value = air.code;
+      opt.innerText = air.name;
+      select.appendChild(opt);
+    });
   },
 
   calculateDynamicQuota() {
-    // Math.floor: calls remaining / ( (2 anchor checks/day * days left) + sweep buffer )
     const callsRemaining = window.CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS - this.monthlyApiFetchCounter;
-    const daysLeft = 28; // Hardcoded mock for current window
-    const maxMonitors = Math.floor(callsRemaining / ((2 * daysLeft) + 14));
+    const maxMonitors = Math.floor(callsRemaining / ((2 * 28) + 14));
     document.getElementById('ui-monitor-max').innerText = maxMonitors;
   },
 
-  promptFetchOverride() {
-    const val = prompt("Enter updated manual fetch count (0-9999):", this.monthlyApiFetchCounter);
+  saveFetchOverride() {
+    const val = document.getElementById('input-override-fetches').value;
     if(val !== null && !isNaN(val)) {
       this.monthlyApiFetchCounter = parseInt(val);
       document.getElementById('ui-settings-fetch-count').innerText = this.monthlyApiFetchCounter;
       this.updateTelemetryTray();
       this.calculateDynamicQuota();
+      UIEngine.closeModal('modal-fetch-override');
     }
   },
 
@@ -700,18 +812,32 @@ const ApplicationLogic = {
   updateTelemetryTray() {
     const max = window.CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS;
     const pct = ((this.monthlyApiFetchCounter / max) * 100).toFixed(1);
-    document.getElementById('telemetry-api').innerText = `🟢 API: Ready | ${this.monthlyApiFetchCounter}/${max} (${pct}%)`;
     
-    const gate = document.getElementById('telemetry-gate');
+    document.getElementById('ui-sub-api').innerText = `${this.monthlyApiFetchCounter}/${max} Calls (${pct}%)`;
+    
+    const gateSub = document.getElementById('ui-sub-gate');
+    const gateIcon = document.getElementById('ui-icon-gate');
+    const settingsShield = document.getElementById('ui-settings-shield-status');
+    const rem = max - this.monthlyApiFetchCounter;
+
     if (this.monthlyApiFetchCounter >= window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS) {
-      gate.innerHTML = `🛡️ Fetch Shield: 🔴 LOCKED (>=${window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS})`;
-      gate.style.color = "var(--danger)";
+      gateSub.innerText = `SHIELDS BLOCKING`;
+      gateSub.style.color = "var(--danger)";
+      gateIcon.innerText = "🔴";
+      settingsShield.innerText = `🔴 SHIELDS BLOCKING (0 calls remaining)`;
+      settingsShield.style.color = "var(--danger)";
     } else if (pct > 80) {
-      gate.innerHTML = `🛡️ Fetch Shield: 🟡 WARNING (>80%)`;
-      gate.style.color = "var(--warning)";
+      gateSub.innerText = `WARNING (>80%)`;
+      gateSub.style.color = "var(--warning)";
+      gateIcon.innerText = "🟡";
+      settingsShield.innerText = `🟡 WARNING (${rem} calls remaining)`;
+      settingsShield.style.color = "var(--warning)";
     } else {
-      gate.innerHTML = `🛡️ Fetch Shield: 🟢 SAFE (<80%)`;
-      gate.style.color = "var(--text-muted)";
+      gateSub.innerText = `SHIELDS AT THE READY`;
+      gateSub.style.color = "var(--text-muted)";
+      gateIcon.innerText = "🟢";
+      settingsShield.innerText = `🟢 SHIELDS AT THE READY (${rem} calls remaining)`;
+      settingsShield.style.color = "var(--success)";
     }
   },
 
@@ -795,19 +921,20 @@ const ApplicationLogic = {
       fetchBtn.disabled = false;
       
       routeSelect.innerHTML = "";
-      this.activeMonitoredRoutesList.forEach((r, idx) => {
+      this.activeMonitoredRoutesList.forEach((r) => {
         const opt = document.createElement('option');
-        opt.value = idx;
+        opt.value = r.id;
         opt.innerText = `🏷️ ${r.tag} (${r.origin} ➔ ${r.dest}) [${r.currency}]`;
         routeSelect.appendChild(opt);
       });
+      routeSelect.value = this.currentlySelectedRouteId;
     }
   },
 
   initializeNewRoute() {
     const origin = document.getElementById('input-origin-iata').value;
     const dest = document.getElementById('input-dest-iata').value;
-    const currency = document.getElementById('input-currency-selection').value;
+    const currency = document.querySelector('input[name="input-currency-selection"]:checked').value;
     const horizon = parseInt(document.getElementById('input-genesis-sweep-horizon-days').value);
     const tag = document.getElementById('input-trip-tag').value || "Untagged Trip";
 
@@ -815,6 +942,8 @@ const ApplicationLogic = {
       alert("Please ensure Origin and Destination IATA codes are valid."); return;
     }
 
+    const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'});
+    
     const routeObj = {
       id: "rt_" + Date.now(),
       tag: tag,
@@ -825,7 +954,8 @@ const ApplicationLogic = {
       currentPrice: Math.floor(Math.random() * 200) + 300, 
       avgPrice: 420,
       lowBound: 310,
-      hiBound: 580
+      hiBound: 580,
+      historyLog: [`${todayStr}: DL 412 (Baseline)`]
     };
 
     this.activeMonitoredRoutesList.push(routeObj);
@@ -847,8 +977,12 @@ const ApplicationLogic = {
       badge.innerText = `🟡 HOLD: PRICES ELEVATED`;
     }
 
-    document.getElementById('ui-anchor-price').innerText = "$" + route.currentPrice.toFixed(2);
-    document.getElementById('ui-currency-label').innerText = route.currency;
+    // Dual Anchors
+    document.getElementById('ui-anchor-outbound').innerText = "$" + route.currentPrice.toFixed(2);
+    document.getElementById('ui-anchor-return').innerText = "$" + (route.currentPrice + 45).toFixed(2);
+    
+    document.querySelectorAll('.ui-currency-label').forEach(el => el.innerText = route.currency);
+    
     document.getElementById('ui-gauge-horizon').innerText = route.horizon;
     document.getElementById('ui-chart-horizon-label').innerText = route.horizon;
 
@@ -858,33 +992,91 @@ const ApplicationLogic = {
     
     document.getElementById('ui-gauge-needle').style.left = `${percent}%`;
     document.getElementById('ui-gauge-low-bounds').innerText = `$${route.lowBound}`;
+    document.getElementById('ui-gauge-hi-bounds').innerText = `$${route.hiBound}`;
 
+    // Y-Axis
+    document.getElementById('ui-y-axis-high').innerText = `$${route.hiBound}`;
+    document.getElementById('ui-y-axis-mid').innerText = `$${route.avgPrice}`;
+    document.getElementById('ui-y-axis-low').innerText = `$${route.lowBound}`;
+
+    // Chart Gen
     const chart = document.getElementById('ui-mock-chart-container');
     chart.innerHTML = "";
+    
+    let baseDate = new Date();
+    
     for(let i=0; i < route.horizon; i++) {
+      const container = document.createElement('div');
+      container.className = "chart-bar-container";
+      
       const bar = document.createElement('div');
       bar.className = (i === 0 || i === route.horizon - 1) ? "chart-bar anchor" : "chart-bar";
       const heightBase = (route.currentPrice / route.hiBound) * 100;
       const flux = Math.sin(i) * 10;
       bar.style.height = `${Math.max(10, Math.min(100, heightBase + flux))}%`;
-      chart.appendChild(bar);
+      
+      container.appendChild(bar);
+      
+      if (i === 0 || i === Math.floor(route.horizon/2) || i === route.horizon - 1) {
+        const label = document.createElement('div');
+        label.className = "x-axis-label";
+        const d = new Date(baseDate); d.setDate(d.getDate() + i);
+        label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
+        container.appendChild(label);
+      }
+      chart.appendChild(container);
     }
+
+    // History Log
+    const logList = document.getElementById('ui-history-log');
+    logList.innerHTML = "";
+    route.historyLog.forEach(log => {
+      const li = document.createElement('li');
+      li.innerText = log;
+      logList.appendChild(li);
+    });
 
     document.getElementById('ui-trueup-required').innerText = route.horizon;
     document.getElementById('ui-trueup-projected').innerText = this.monthlyApiFetchCounter + route.horizon;
   },
 
+  shuffleData() {
+    if(!this.currentlySelectedRouteId) return;
+    const route = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
+    if(route) {
+      route.currentPrice = Math.floor(Math.random() * 200) + 300;
+      route.lowBound = Math.floor(Math.random() * 50) + 250;
+      route.hiBound = route.lowBound + Math.floor(Math.random() * 300) + 150;
+      route.avgPrice = route.lowBound + Math.floor((route.hiBound - route.lowBound) / 2);
+      
+      const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'});
+      const airlines = ['DL', 'AC', 'UA', 'AA', 'JL'];
+      const rndCarrier = airlines[Math.floor(Math.random() * airlines.length)];
+      const rndFlight = Math.floor(Math.random() * 900) + 100;
+      
+      route.historyLog.unshift(`${todayStr}: ${rndCarrier} ${rndFlight} (Shuffle)`);
+      if(route.historyLog.length > 5) route.historyLog.pop(); // Keep log tidy
+      
+      this.updateOracleUI(route);
+    }
+  },
+
   executeManualHorizonTrueUp() {
-    alert("Executing backend Cloud Function sync via Ignav...");
     this.monthlyApiFetchCounter += parseInt(document.getElementById('ui-trueup-required').innerText);
     this.updateTelemetryTray();
     UIEngine.closeModal('modal-true-up');
   },
 
-  untrackRoute() {
-    this.activeMonitoredRoutesList = [];
-    this.currentlySelectedRouteId = null;
+  executeUntrackRoute() {
+    this.activeMonitoredRoutesList = this.activeMonitoredRoutesList.filter(r => r.id !== this.currentlySelectedRouteId);
+    this.currentlySelectedRouteId = this.activeMonitoredRoutesList.length > 0 ? this.activeMonitoredRoutesList[0].id : null;
+    UIEngine.closeModal('modal-confirm-untrack');
     this.renderDashboardState();
+    
+    if(this.currentlySelectedRouteId) {
+      const nextRoute = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
+      this.updateOracleUI(nextRoute);
+    }
   }
 };
 
@@ -892,6 +1084,12 @@ window.onload = () => {
   ThemeEngine.init();
   ApplicationLogic.init();
 };
+
+document.getElementById('select-active-monitored-route').addEventListener('change', (e) => {
+  ApplicationLogic.currentlySelectedRouteId = e.target.value;
+  const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === e.target.value);
+  if(route) ApplicationLogic.updateOracleUI(route);
+});
 </script>
 </body>
 </html>
