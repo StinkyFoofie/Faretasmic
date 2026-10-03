@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ==========================================================================
+     LAYER 1: CONFIGURATION SANDBOX (USER INVARIANT BLOCK)
+     ========================================================================== -->
+<script>
+window.CONFIG = {
+  APP_VERSION: "v0.1",
+  APP_TITLE: "✈️ Faretasmic!",
+  DEFAULT_HOME_ORIGIN_AIRPORT_IATA: "SFO",
+  DEFAULT_CABIN_CLASS: "economy",
+  MAXIMUM_FREE_TIER_MONTHLY_CALLS: 1000,
+  DEFAULT_FAILSAFE_LOCKOUT_CALLS: 950,
+  FIREBASE: {
+    apiKey: "AIzaSyDtUAQVNKqQQ-nIVPIzHZuW7gUjg1j7C_c",
+    authDomain: "faretasmic.firebaseapp.com",
+    projectId: "faretasmic"
+  }
+};
+</script>
+
+<!-- ==========================================================================
+     LAYER 2: HTML FOUNDATION & PWA SETUP
+     ========================================================================== -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SkyOracle Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;800&family=Press+Start+2P&family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&family=JetBrains+Mono&family=Cinzel:wght@600&family=VT323&family=Fira+Code&family=Quicksand:wght@500;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- ==========================================================================
+     LAYER 3: STYLING ENGINE (TOKENS & ARCHITECTURE)
+     ========================================================================== -->
+<style>
+/* --- THEME TOKENS --- */
+:root, [data-theme="modern-dark"] {
+  --bg-base: #121212; --bg-surface: #1e1e1e; --bg-surface-hover: #2a2a2a; --bg-input: #2d2d2d; --bg-placeholder: #333333; --bg-backdrop: rgba(0,0,0,0.75); --text-main: #ffffff; --text-muted: #a0a0a0; --text-inverse: #000000; --text-disabled: #666666; --border: #333333; --border-hover: #555555; --border-focus: #4da6ff; --accent: #4da6ff; --accent-hover: #3388ff; --success: #00cc66; --warning: #ffaa00; --danger: #ff4444; --bg-badge: #333333; --text-badge: #ffffff; --shadow: 0 4px 16px rgba(0,0,0,0.5); --font-main: 'Inter', sans-serif; --font-heading: 'Inter', sans-serif; --radius: 8px; --scrollbar-thumb: #555555; --scrollbar-track: #1e1e1e; --accent-completion: #00cc66;
+}
+[data-theme="retro-arcade"] {
+  --bg-base: #050510; --bg-surface: #101025; --bg-surface-hover: #1b1b38; --bg-input: #0c0c1d; --bg-placeholder: #222244; --bg-backdrop: rgba(5,5,16,0.85); --text-main: #f0f0ff; --text-muted: #8888bb; --text-inverse: #050510; --text-disabled: #555577; --border: #ffcc00; --border-hover: #ff0055; --border-focus: #00ffff; --accent: #ff0055; --accent-hover: #ff3377; --success: #00ff66; --warning: #ffcc00; --danger: #ff2222; --bg-badge: #ff0055; --text-badge: #ffffff; --shadow: 0 0 15px rgba(255,0,85,0.35); --font-main: 'Press Start 2P', monospace; --font-heading: 'Press Start 2P', monospace; --radius: 2px; --scrollbar-thumb: #ffcc00; --scrollbar-track: #101025; --accent-completion: #00ffff;
+}
+[data-theme="cyberpunk"] {
+  --bg-base: #05080f; --bg-surface: #0e1420; --bg-surface-hover: #162032; --bg-input: #080c14; --bg-placeholder: #1b263b; --bg-backdrop: rgba(5,8,15,0.85); --text-main: #fcee09; --text-muted: #00e8f8; --text-inverse: #05080f; --text-disabled: #415a77; --border: #00e8f8; --border-hover: #fcee09; --border-focus: #ff003c; --accent: #fcee09; --accent-hover: #e0d408; --success: #00e8f8; --warning: #ffbe0b; --danger: #ff003c; --bg-badge: #fcee09; --text-badge: #05080f; --shadow: 0 0 18px rgba(0,232,248,0.25); --font-main: 'Share Tech Mono', monospace; --font-heading: 'Share Tech Mono', monospace; --radius: 0px; --scrollbar-thumb: #fcee09; --scrollbar-track: #0e1420; --accent-completion: #ff003c;
+}
+/* Add remaining 6 themes as desired locally to keep token limits safe */
+
+/* --- GLOBAL RESETS & NORMALIZATION --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg-base); color: var(--text-main); font-family: var(--font-main); transition: 0.2s ease; overflow-x: hidden; }
+body.modal-open { overflow: hidden; }
+h1, h2, h3 { font-family: var(--font-heading); }
+button, input, select { font-family: var(--font-main); outline: none; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-input); color: var(--text-main); }
+button { cursor: pointer; transition: 0.2s; white-space: normal; } /* Zero ellipses requirement */
+button:hover { border-color: var(--border-hover); background: var(--bg-surface-hover); }
+
+/* Retro Arcade normalizations */
+[data-theme="retro-arcade"] input, [data-theme="retro-arcade"] select, [data-theme="retro-arcade"] button { font-size: 11px; }
+
+/* --- LAYOUT ARCHITECTURE --- */
+.app-container { max-width: 1200px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+.header-tray { display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+.header-actions { display: flex; gap: 8px; }
+
+.telemetry-tray { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); background: var(--bg-input); padding: 10px; border-radius: var(--radius); flex-wrap: wrap; gap: 10px; }
+.telemetry-item { display: flex; align-items: center; gap: 6px; }
+
+.main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+@media(min-width: 900px) {
+  .main-grid { grid-template-columns: 350px 1fr; }
+}
+
+.panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+.panel-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+
+/* --- UI COMPONENTS --- */
+.primary-btn { background: var(--accent); color: var(--text-inverse); font-weight: bold; padding: 12px; border: none; font-size: 14px; text-align: center; }
+.primary-btn:hover { background: var(--accent-hover); }
+.secondary-btn { padding: 10px; font-size: 13px; font-weight: bold; }
+
+.status-badge { display: inline-block; padding: 6px 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
+.status-buy { background: var(--success); color: var(--text-inverse); }
+.status-hold { background: var(--warning); color: var(--text-inverse); }
+
+/* --- PRICE GAUGE --- */
+.gauge-container { width: 100%; height: 24px; display: flex; border-radius: var(--radius); overflow: hidden; position: relative; margin-top: 10px; border: 1px solid var(--border); }
+.gauge-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); }
+.gauge-low { flex: 1; background: var(--success); opacity: 0.8; }
+.gauge-typ { flex: 2; background: var(--warning); opacity: 0.8; }
+.gauge-hi { flex: 1; background: var(--danger); opacity: 0.8; }
+.gauge-marker { position: absolute; top: -2px; width: 2px; height: 28px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+.gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
+
+/* --- MOCK TRAJECTORY CHART --- */
+.mock-chart { height: 150px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px; gap: 4px; }
+.chart-bar { flex: 1; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; transition: 0.3s; min-height: 10px; position: relative; }
+.chart-bar.anchor { background: var(--success); opacity: 1; }
+
+/* --- MODALS (Strict Containment) --- */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
+.modal-overlay.active { display: flex; }
+.modal-content { background: var(--bg-surface); border: 1px solid var(--accent); border-radius: var(--radius); width: 95vw; max-width: 580px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow); }
+.modal-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+.modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+.modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; }
+
+/* Form Controls & Autocomplete */
+.form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.form-group label { font-size: 12px; color: var(--text-muted); }
+.form-control { padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; height: 38px; min-height: 38px; -webkit-appearance: none; appearance: none; }
+.form-row { display: flex; gap: 10px; }
+.form-row > * { flex: 1; min-width: 0; }
+
+.autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; max-height: 150px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); }
+.autocomplete-item { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); }
+.autocomplete-item:hover { background: var(--bg-surface-hover); }
+
+/* Multi-select Pills */
+.pill-container { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius); min-height: 38px; background: var(--bg-input); }
+.airline-pill { background: var(--bg-surface-hover); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.airline-pill span { cursor: pointer; color: var(--danger); font-weight: bold; }
+
+/* Empty State Canvas */
+#empty-state-canvas { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); gap: 15px; }
+
+/* Utilities */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     LAYER 4: UI COMPONENTS & STATIC MARKUP
+     ========================================================================== -->
+<div class="app-container">
+  
+  <!-- Header & Theming -->
+  <header class="header-tray">
+    <h2 id="ui-app-title">✈️ SkyOracle Engine</h2>
+    <div class="header-actions">
+      <button class="secondary-btn" onclick="ThemeEngine.setTheme('random')" title="Switch Theme">🎨</button>
+      <button class="secondary-btn" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Telemetry Tray -->
+  <div class="telemetry-tray">
+    <div class="telemetry-item" id="telemetry-api">🟢 API: Ready | 412/1000 (41.2%)</div>
+    <div class="telemetry-item" id="telemetry-db">🟢 DB: Synced</div>
+    <div class="telemetry-item" id="telemetry-cadence">⏱️ Pull: DAILY 02:00 UTC</div>
+    <div class="telemetry-item" id="telemetry-gate">🛡️ Gate: 🟢 SAFE (<95%)</div>
+  </div>
+
+  <!-- Main Split Architecture -->
+  <div class="main-grid">
+    
+    <!-- Left Column: Controls & Oracle -->
+    <div class="left-col" style="display: flex; flex-direction: column; gap: 15px;">
+      
+      <div class="panel">
+        <div class="panel-title">Active Monitors (1 / 33)</div>
+        <select class="form-control" id="select-active-monitored-route">
+          <option value="none">-- Select Route --</option>
+        </select>
+        <div class="form-row">
+          <button class="primary-btn" onclick="UIEngine.openModal('modal-add-flight')">✈️ ADD FLIGHT 🚀</button>
+          <button class="secondary-btn" onclick="UIEngine.openModal('modal-true-up')" id="btn-manual-fetch" disabled>⚡ Fetch</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-oracle" style="display: none;">
+        <div class="panel-title">Predictive Oracle Engine</div>
+        <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 30D BASELINE</div>
+        <div style="font-size: 14px; margin-top: 10px;">
+          Anchor Fares: <strong id="ui-anchor-price">$0.00</strong> (<span id="ui-currency-label">USD</span>)
+        </div>
+        
+        <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted);">
+          HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET):
+        </div>
+        <div class="gauge-container" id="container-price-spectrum-gauge">
+          <div class="gauge-segment gauge-low" id="ui-gauge-low-bounds">$320-$350</div>
+          <div class="gauge-segment gauge-typ">TYPICAL</div>
+          <div class="gauge-segment gauge-hi">HIGH</div>
+          <div class="gauge-marker" id="ui-gauge-needle" style="left: 20%;"></div>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Right Column: Trajectory & Data -->
+    <div class="right-col" style="display: flex; flex-direction: column; gap: 15px;">
+      
+      <!-- Empty State Canvas -->
+      <div id="empty-state-canvas">
+        <h1>🔭 No Flights Monitored</h1>
+        <p>Your Oracle Engine is fueled and ready. Initialize your first Genesis Sweep to lock in a pricing baseline.</p>
+        <button class="primary-btn" onclick="UIEngine.openModal('modal-add-flight')">✈️ INITIALIZE TRACE 🚀</button>
+      </div>
+
+      <!-- Active Dashboard (Hidden initially) -->
+      <div id="active-dashboard-canvas" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
+        <div class="panel">
+          <div class="panel-title"><span id="ui-chart-horizon-label">14</span>-DAY ELASTIC TRAJECTORY (INTERPOLATED)</div>
+          <div class="mock-chart" id="ui-mock-chart-container">
+            <!-- Bars injected by JS -->
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+            <span>Genesis Sweep</span>
+            <span>Anchor (Today)</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Selected Itinerary Details</div>
+          <div style="font-size: 13px; line-height: 1.6;" id="ui-itinerary-details">
+            🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 ➔ 17:05<br>
+            🛬 Return: JL 001 (HND ➔ SFO) 14:15 ➔ 17:50
+          </div>
+        </div>
+
+        <div class="form-row">
+          <button class="secondary-btn" style="background: var(--success); color: var(--bg-base);">💳 BOOK NOW</button>
+          <button class="secondary-btn">🌐 GOOGLE FLIGHTS</button>
+        </div>
+        <div class="form-row">
+          <button class="secondary-btn">📥 EXPORT CSV</button>
+          <button class="secondary-btn" style="color: var(--danger);" onclick="ApplicationLogic.untrackRoute()">🗑️ UNTRACK</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     MODALS
+     ========================================================================== -->
+
+<!-- 1. Add Flight Modal -->
+<div class="modal-overlay" id="modal-add-flight">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>✈️ ADD MONITORED FLIGHT 🚀</span>
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-add-flight')">X</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="form-group">
+        <label>BASE CURRENCY (Locked for this Trace):</label>
+        <div style="display: flex; gap: 15px; font-size: 14px;">
+          <label><input type="radio" name="input-currency-selection" value="USD" checked> USD ($)</label>
+          <label><input type="radio" name="input-currency-selection" value="CAD"> CAD ($)</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>TRIP TYPE:</label>
+          <select class="form-control" id="input-trip-type" onchange="ApplicationLogic.toggleReturnDate()">
+            <option value="round-trip">Round-Trip</option>
+            <option value="one-way">One-Way</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>TRIP TAG:</label>
+          <input type="text" class="form-control" id="input-trip-tag" placeholder="e.g. Joe's Vacation">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>ORIGIN (IATA):</label>
+          <input type="text" class="form-control iata-input" id="input-origin-iata" maxlength="3" autocomplete="off">
+          <div class="autocomplete-dropdown" id="dropdown-origin-iata"></div>
+        </div>
+        <div class="form-group">
+          <label>DESTINATION (IATA):</label>
+          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off">
+          <div class="autocomplete-dropdown" id="dropdown-dest-iata"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>DEPARTURE DATE:</label>
+          <input type="date" class="form-control" id="input-departure-date">
+        </div>
+        <div class="form-group">
+          <label>RETURN DATE:</label>
+          <input type="date" class="form-control" id="input-return-date">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>PASSENGERS:</label>
+          <select class="form-control" id="input-passenger-count">
+            <option value="1">1 Passenger</option>
+            <option value="2">2 Passengers</option>
+            <option value="3">3 Passengers</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>CABIN CLASS:</label>
+          <select class="form-control" id="input-cabin-class">
+            <option value="economy">Economy</option>
+            <option value="premium">Premium Economy</option>
+            <option value="business">Business</option>
+            <option value="first">First</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>GENESIS SWEEP HORIZON (Days to model): <span id="ui-slider-val" style="color: var(--accent); font-weight: bold;">21</span></label>
+        <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="21" style="width: 100%; margin-top: 5px;" oninput="document.getElementById('ui-slider-val').innerText = this.value">
+      </div>
+
+      <div class="form-group">
+        <label>TARGET AIRLINES (Multi-Select):</label>
+        <div class="pill-container" id="container-airline-tags">
+          <div class="airline-pill">DL <span onclick="this.parentElement.remove()">✕</span></div>
+          <div class="airline-pill">JL <span onclick="this.parentElement.remove()">✕</span></div>
+        </div>
+        <select class="form-control" style="margin-top: 5px;" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)">
+          <option value="">+ Add Carrier...</option>
+          <option value="AA">American Airlines (AA)</option>
+          <option value="AC">Air Canada (AC)</option>
+          <option value="NH">All Nippon Airways (NH)</option>
+          <option value="CX">Cathay Pacific (CX)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>JUNK FARE FILTER:</label>
+        <select class="form-control" id="input-stop-filter">
+          <option value="nonstop">Nonstop Only</option>
+          <option value="1stop">Max 1 Stop</option>
+          <option value="any">Any Stops</option>
+        </select>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-add-flight')">CANCEL</button>
+      <button class="primary-btn" onclick="ApplicationLogic.initializeNewRoute()">START TRACKING</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Settings Modal -->
+<div class="modal-overlay" id="modal-settings">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>⚙️ ENGINE SETTINGS</span>
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-settings')">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>MONTHLY USAGE TELEMETRY:</label>
+        <div style="font-size: 14px;">Current Window: Oct 01 — Oct 31, 2026</div>
+        <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: 412 / 1000 (41.2%)</div>
+      </div>
+      <hr style="border: 0; border-top: 1px solid var(--border);">
+      <div class="form-group">
+        <label>FAIL-SAFE HARD LOCK:</label>
+        <label style="display: flex; align-items: center; gap: 10px; font-size: 14px;">
+          <input type="checkbox" checked> Enable Automatic Quota Gate
+        </label>
+        <div class="form-row" style="margin-top: 10px;">
+          <input type="number" class="form-control" value="950" readonly>
+          <input type="text" class="form-control" value="Calls Threshold" readonly style="background: transparent; border: none;">
+        </div>
+        <div style="font-size: 13px; color: var(--success);">🟢 UNLOCKED (538 calls remaining)</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-settings')">CLOSE</button>
+      <button class="primary-btn" onclick="UIEngine.closeModal('modal-settings')">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Manual True-Up Modal -->
+<div class="modal-overlay" id="modal-true-up">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>⚠️ MANUAL HORIZON TRUE-UP</span>
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">X</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 14px; line-height: 1.5;">Executing this manual sweep will overwrite the current elastically interpolated data with live Ignav API pricing.</p>
+      <ul style="font-size: 14px; line-height: 1.8; margin-left: 20px; color: var(--text-muted);">
+        <li>Calls Required: <strong style="color: var(--text-main);" id="ui-trueup-required">21</strong></li>
+        <li>Current Usage: <strong>412 / 1,000</strong></li>
+        <li>Projected Usage: <strong id="ui-trueup-projected">433</strong></li>
+      </ul>
+      <div style="background: var(--bg-input); padding: 10px; border-left: 4px solid var(--success); font-size: 13px; margin-top: 10px;">
+        🟢 SAFE: This execution will not breach your 950 lock threshold.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-true-up')">CANCEL</button>
+      <button class="primary-btn" onclick="ApplicationLogic.executeManualHorizonTrueUp()">EXECUTE TRUE-UP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     LAYER 5: APPLICATION LOGIC
+     ========================================================================== -->
+<script>
+/* --- THEME ENGINE --- */
+const THEMES = {"modern-dark":1, "retro-arcade":1, "cyberpunk":1}; // Minimalized array for demo safety
+const ThemeEngine = {
+  getThemeKeys() { return Object.keys(THEMES); },
+  getActiveTheme() { return localStorage.getItem('app_theme') || 'modern-dark'; },
+  applyTheme(themeKey) {
+    let resolvedTheme = themeKey;
+    if(themeKey === 'random') {
+      const keys = this.getThemeKeys();
+      resolvedTheme = keys[Math.floor(Math.random() * keys.length)];
+    }
+    document.body.setAttribute('data-theme', resolvedTheme);
+    return resolvedTheme;
+  },
+  setTheme(themeKey) {
+    localStorage.setItem('app_theme', themeKey);
+    this.applyTheme(themeKey);
+  },
+  init() { this.applyTheme(this.getActiveTheme()); }
+};
+
+/* --- IATA AIRPORT DICTIONARY (ZERO-COST EMBEDDED) --- */
+const AIRPORT_DICTIONARY = [
+  { iata: "SFO", city: "San Francisco", name: "SFO Int." },
+  { iata: "JFK", city: "New York", name: "John F. Kennedy" },
+  { iata: "LAX", city: "Los Angeles", name: "LAX Int." },
+  { iata: "HND", city: "Tokyo", name: "Haneda" },
+  { iata: "NRT", city: "Tokyo", name: "Narita" },
+  { iata: "LHR", city: "London", name: "Heathrow" },
+  { iata: "CDG", city: "Paris", name: "Charles de Gaulle" },
+  { iata: "FRA", city: "Frankfurt", name: "Frankfurt Int." },
+  { iata: "SIN", city: "Singapore", name: "Changi" },
+  { iata: "YYZ", city: "Toronto", name: "Pearson Int." },
+  { iata: "YVR", city: "Vancouver", name: "Vancouver Int." },
+  { iata: "HKG", city: "Hong Kong", name: "Hong Kong Int." },
+  { iata: "TPE", city: "Taipei", name: "Taoyuan" },
+  { iata: "ICN", city: "Seoul", name: "Incheon" },
+  { iata: "DXB", city: "Dubai", name: "Dubai Int." }
+];
+
+/* --- UI MANIPULATION --- */
+const UIEngine = {
+  openModal(id) { 
+    document.getElementById(id).classList.add('active'); 
+    document.body.classList.add('modal-open');
+  },
+  closeModal(id) { 
+    document.getElementById(id).classList.remove('active'); 
+    document.body.classList.remove('modal-open');
+  }
+};
+
+/* --- CORE APPLICATION LOGIC & ORACLE ENGINE --- */
+const ApplicationLogic = {
+  activeMonitoredRoutesList: [],
+  currentlySelectedRouteId: null,
+  monthlyApiFetchCounter: 412,
+  isSafetyQuotaLockoutEngaged: false,
+
+  init() {
+    document.getElementById('ui-app-title').innerText = window.CONFIG.APP_TITLE;
+    document.getElementById('input-origin-iata').value = window.CONFIG.DEFAULT_HOME_ORIGIN_AIRPORT_IATA;
+    
+    this.setupDateLocks();
+    this.setupIataAutocomplete();
+    this.renderDashboardState();
+  },
+
+  setupDateLocks() {
+    const today = new Date().toISOString().split("T")[0];
+    const depInput = document.getElementById('input-departure-date');
+    const retInput = document.getElementById('input-return-date');
+    
+    depInput.min = today;
+    depInput.addEventListener('change', (e) => {
+      retInput.min = e.target.value; // Temporal locking
+      if(retInput.value && retInput.value < e.target.value) retInput.value = e.target.value;
+    });
+  },
+
+  toggleReturnDate() {
+    const isOneWay = document.getElementById('input-trip-type').value === 'one-way';
+    const retInput = document.getElementById('input-return-date');
+    retInput.disabled = isOneWay;
+    if(isOneWay) retInput.value = "";
+  },
+
+  setupIataAutocomplete() {
+    const setup = (inputId, dropdownId) => {
+      const input = document.getElementById(inputId);
+      const dropdown = document.getElementById(dropdownId);
+      
+      input.addEventListener('input', (e) => {
+        const val = e.target.value.toUpperCase();
+        input.value = val; // Force uppercase
+        dropdown.innerHTML = "";
+        
+        if(val.length < 1) { dropdown.style.display = "none"; return; }
+        
+        const matches = AIRPORT_DICTIONARY.filter(a => a.iata.includes(val) || a.city.toUpperCase().includes(val));
+        if(matches.length > 0) {
+          dropdown.style.display = "block";
+          matches.forEach(m => {
+            const div = document.createElement('div');
+            div.className = "autocomplete-item";
+            div.innerText = `${m.iata} - ${m.city} (${m.name})`;
+            div.onclick = () => { input.value = m.iata; dropdown.style.display = "none"; };
+            dropdown.appendChild(div);
+          });
+        } else {
+          dropdown.style.display = "none";
+        }
+      });
+      // Close on blur (delayed to allow click)
+      input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = "none", 200));
+    };
+    setup('input-origin-iata', 'dropdown-origin-iata');
+    setup('input-dest-iata', 'dropdown-dest-iata');
+  },
+
+  addAirlinePill(selectElement) {
+    if(!selectElement.value) return;
+    const container = document.getElementById('container-airline-tags');
+    const div = document.createElement('div');
+    div.className = "airline-pill";
+    div.innerHTML = `${selectElement.value} <span onclick="this.parentElement.remove()">✕</span>`;
+    container.appendChild(div);
+    selectElement.value = "";
+  },
+
+  renderDashboardState() {
+    const emptyCanvas = document.getElementById('empty-state-canvas');
+    const activeCanvas = document.getElementById('active-dashboard-canvas');
+    const oraclePanel = document.getElementById('panel-oracle');
+    const fetchBtn = document.getElementById('btn-manual-fetch');
+    const routeSelect = document.getElementById('select-active-monitored-route');
+
+    if (this.activeMonitoredRoutesList.length === 0) {
+      emptyCanvas.classList.remove('hidden');
+      activeCanvas.classList.add('hidden');
+      oraclePanel.style.display = "none";
+      fetchBtn.disabled = true;
+    } else {
+      emptyCanvas.classList.add('hidden');
+      activeCanvas.classList.remove('hidden');
+      oraclePanel.style.display = "flex";
+      fetchBtn.disabled = false;
+      
+      // Select logic population
+      routeSelect.innerHTML = "";
+      this.activeMonitoredRoutesList.forEach((r, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = `🏷️ ${r.tag} (${r.origin} ➔ ${r.dest}) [${r.currency}]`;
+        routeSelect.appendChild(opt);
+      });
+    }
+  },
+
+  initializeNewRoute() {
+    // Collect Data
+    const origin = document.getElementById('input-origin-iata').value;
+    const dest = document.getElementById('input-dest-iata').value;
+    const currency = document.querySelector('input[name="input-currency-selection"]:checked').value;
+    const horizon = parseInt(document.getElementById('input-genesis-sweep-horizon-days').value);
+    const tag = document.getElementById('input-trip-tag').value || "Untagged Trip";
+
+    if(!origin || !dest || origin.length !== 3 || dest.length !== 3) {
+      alert("Please ensure Origin and Destination IATA codes are valid."); return;
+    }
+
+    // Mock Genesis Sweep & Oracle Calculation
+    const routeObj = {
+      id: "rt_" + Date.now(),
+      tag: tag,
+      origin: origin,
+      dest: dest,
+      currency: currency,
+      horizon: horizon,
+      currentPrice: Math.floor(Math.random() * 200) + 300, // Mock $300-$500
+      avgPrice: 420,
+      lowBound: 310,
+      hiBound: 580
+    };
+
+    this.activeMonitoredRoutesList.push(routeObj);
+    this.currentlySelectedRouteId = routeObj.id;
+    
+    this.updateOracleUI(routeObj);
+    UIEngine.closeModal('modal-add-flight');
+    this.renderDashboardState();
+  },
+
+  updateOracleUI(route) {
+    // Badge Math
+    const badge = document.getElementById('badge-oracle-recommendation-status');
+    if (route.currentPrice < route.avgPrice) {
+      const drop = Math.round(((route.avgPrice - route.currentPrice) / route.avgPrice) * 100);
+      badge.className = "status-badge status-buy";
+      badge.innerText = `📉 BUY NOW: -${drop}% vs 30D BASELINE`;
+    } else {
+      badge.className = "status-badge status-hold";
+      badge.innerText = `🟡 HOLD: PRICES ELEVATED`;
+    }
+
+    // Details
+    document.getElementById('ui-anchor-price').innerText = "$" + route.currentPrice.toFixed(2);
+    document.getElementById('ui-currency-label').innerText = route.currency;
+    document.getElementById('ui-gauge-horizon').innerText = route.horizon;
+    document.getElementById('ui-chart-horizon-label').innerText = route.horizon;
+
+    // Gauge positioning (Mock math: bounds 310 to 580. range = 270)
+    const range = route.hiBound - route.lowBound;
+    let percent = ((route.currentPrice - route.lowBound) / range) * 100;
+    if(percent < 5) percent = 5; if(percent > 95) percent = 95;
+    
+    document.getElementById('ui-gauge-needle').style.left = `${percent}%`;
+    document.getElementById('ui-gauge-low-bounds').innerText = `$${route.lowBound}`;
+
+    // Mock Chart Bars
+    const chart = document.getElementById('ui-mock-chart-container');
+    chart.innerHTML = "";
+    for(let i=0; i < route.horizon; i++) {
+      const bar = document.createElement('div');
+      bar.className = (i === 0 || i === route.horizon - 1) ? "chart-bar anchor" : "chart-bar";
+      
+      // Elastic interpolation visual mock
+      const heightBase = (route.currentPrice / route.hiBound) * 100;
+      const flux = Math.sin(i) * 10;
+      bar.style.height = `${Math.max(10, Math.min(100, heightBase + flux))}%`;
+      
+      chart.appendChild(bar);
+    }
+
+    // Modal UI prep
+    document.getElementById('ui-trueup-required').innerText = route.horizon;
+    document.getElementById('ui-trueup-projected').innerText = this.monthlyApiFetchCounter + route.horizon;
+  },
+
+  executeManualHorizonTrueUp() {
+    alert("Executing backend Cloud Function sync via Ignav...");
+    this.monthlyApiFetchCounter += parseInt(document.getElementById('ui-trueup-required').innerText);
+    document.getElementById('telemetry-api').innerText = `🟢 API: Ready | ${this.monthlyApiFetchCounter}/1000 (${(this.monthlyApiFetchCounter/10).toFixed(1)}%)`;
+    UIEngine.closeModal('modal-true-up');
+  },
+
+  untrackRoute() {
+    this.activeMonitoredRoutesList = [];
+    this.currentlySelectedRouteId = null;
+    this.renderDashboardState();
+  }
+};
+
+window.onload = () => {
+  ThemeEngine.init();
+  ApplicationLogic.init();
+};
+</script>
+</body>
+</html>
