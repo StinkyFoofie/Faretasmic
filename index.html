@@ -10,7 +10,7 @@ window.CONFIG = {
      SECTION 1: APP IDENTITY (Alphabetical)
      ======================================================================== */
   APP_TITLE: "✨ Faretasmic!!!",
-  APP_VERSION: "v0.5",
+  APP_VERSION: "v0.6",
 
   /* ========================================================================
      SECTION 2: FIREBASE CONFIGURATION
@@ -119,7 +119,7 @@ body {
   transition: background-color 0.15s ease, color 0.15s ease; overflow-x: hidden; 
 }
 body.modal-open { overflow: hidden; }
-h1, h2, h3 { font-family: var(--font-heading); }
+h1, h2, h3 { font-family: var(--font-heading); text-align: center; }
 
 /* Form Elements Normalization */
 button, input, textarea { 
@@ -174,7 +174,7 @@ input[type="date"] { color-scheme: dark light; }
 .main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 @media(min-width: 900px) { .main-grid { grid-template-columns: 350px 1fr; } }
 .panel { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-.panel-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 5px; }
+.panel-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
 
 /* --- 4. UI COMPONENTS --- */
 .primary-btn { background: var(--accent); color: var(--text-inverse); font-weight: bold; padding: 12px; border: none; font-size: 14px; text-align: center; }
@@ -193,8 +193,16 @@ input[type="date"] { color-scheme: dark light; }
 .custom-select { position: relative; width: 100%; user-select: none; }
 .custom-select-trigger { padding: 10px; font-size: 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; height: 38px; cursor: pointer; color: var(--text-main); }
 .custom-select-trigger:hover { border-color: var(--border-hover); }
-.custom-select-options { position: absolute; top: 100%; left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); margin-top: 4px; }
+.custom-select-options { position: absolute; top: calc(100% + 4px); left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); }
 .custom-select.open .custom-select-options { display: block; }
+
+/* Upward projection for Target Airlines */
+#cs-add-airline .custom-select-options { bottom: calc(100% + 4px); top: auto; }
+
+/* Centered Format Dropdown */
+#cs-chart-format .custom-select-trigger { justify-content: center; text-align: center; }
+#cs-chart-format .custom-option { text-align: center; }
+
 .custom-option { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); color: var(--text-main); }
 .custom-option:hover { background: var(--bg-surface-hover); }
 .custom-option.selected { background: var(--accent); color: var(--text-inverse); font-weight: bold; }
@@ -203,16 +211,15 @@ input[type="date"] { color-scheme: dark light; }
 
 /* --- 6. PRICE GAUGE & CHART --- */
 #badge-oracle-recommendation-status, #container-price-spectrum-gauge {
-  height: 30px; display: flex; align-items: center; justify-content: center;
-  border-radius: var(--radius); margin-top: 6px; margin-bottom: 8px; width: 100%;
+  height: 32px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); margin-top: 3px; margin-bottom: 8px; width: 100%;
 }
-.gauge-container { overflow: hidden; position: relative; border: 1px solid var(--border); flex-direction: row; }
+.gauge-container { overflow: hidden; position: relative; flex-direction: row; border: none; }
 .gauge-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); }
 .gauge-low { flex: 1; background: var(--success); opacity: 0.8; }
 .gauge-typ { flex: 2; background: var(--warning); opacity: 0.8; }
 .gauge-hi { flex: 1; background: var(--danger); opacity: 0.8; }
-.gauge-marker { position: absolute; top: -2px; width: 2px; height: 34px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
-.gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
+.gauge-marker { position: absolute; top: -5px; width: 3px; height: 42px; background: var(--text-main); box-shadow: 0 0 6px rgba(0,0,0,0.6); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 
 .chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 5px; }
 .y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 50px; }
@@ -227,16 +234,15 @@ input[type="date"] { color-scheme: dark light; }
 .chart-svg-layer { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 28px; z-index: 1; pointer-events: none; }
 
 /* External Anchor Legends */
-.anchor-labels-container { display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--text-muted); margin-top: 2px; padding: 0 10px; }
-.anchor-label-block { text-align: center; line-height: 1.3; }
+.anchor-label-block { position: absolute; bottom: -30px; font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; white-space: nowrap; transform: translateX(-50%); }
 
 /* --- 7. DASHBOARD GRID & ACTION ROW --- */
 .details-wrapper { display: flex; gap: 15px; flex-wrap: wrap; width: 100%; }
 .details-panel-75 { flex: 3 1 400px; }
 .details-panel-25 { flex: 1 1 150px; }
 
-.action-btn-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
-.action-btn-row > button { flex: 1 1 180px; min-height: 42px; }
+.action-btn-row { display: flex; flex-wrap: nowrap; gap: 10px; width: 100%; overflow-x: auto; }
+.action-btn-row > button { flex: 1 1 0; min-width: 0; min-height: 42px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
 .history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; list-style: none; }
 
@@ -274,12 +280,17 @@ input[type="date"] { color-scheme: dark light; }
 #empty-state-canvas { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); gap: 15px; }
 .hidden { display: none !important; }
 
-/* --- 9. TOAST NOTIFICATIONS (FEAT-17, FEAT-18) --- */
+/* --- 9. TOAST NOTIFICATIONS --- */
 .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; display: flex; flex-direction: column; gap: 10px; }
-.theme-toast { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 10px 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; animation: toastFlyIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, toastFlyOut 0.4s ease-in 2.65s forwards; }
+.theme-toast { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 24px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; animation: toastFlyIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, toastFlyOut 0.4s ease-in 2.65s forwards; }
 @keyframes toastFlyIn { from { opacity: 0; transform: translateY(-30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes toastFlyOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-40px) scale(0.85); } }
 
+/* Deep-Link Router Flight Cards */
+.router-card { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease; }
+.router-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); box-shadow: var(--shadow); }
+.router-card-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
+.router-card-sub { font-size: 11px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -296,7 +307,7 @@ input[type="date"] { color-scheme: dark light; }
   <header class="header-tray">
     <div class="header-brand">
       <h2 id="ui-app-title">✨ Faretasmic!</h2>
-      <span id="ui-app-version" class="app-version">v0.5</span>
+      <span id="ui-app-version" class="app-version">v0.6</span>
     </div>
     
     <div class="telemetry-tray">
@@ -348,7 +359,7 @@ input[type="date"] { color-scheme: dark light; }
     <div class="left-col" style="display: flex; flex-direction: column; gap: 15px;">
       
       <div class="panel">
-        <div class="panel-title">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
+        <div class="panel-title" style="text-align: center;">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
         
         <!-- Custom Select: Active Monitors -->
         <div class="custom-select" id="cs-active-monitor" data-value="none">
@@ -366,16 +377,16 @@ input[type="date"] { color-scheme: dark light; }
       </div>
 
       <div class="panel" id="panel-oracle" style="display: none;">
-        <div class="panel-title">Predictive Oracle Engine</div>
+        <div class="panel-title" style="text-align: center;">Predictive Oracle Engine</div>
         <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 14 DAY BASELINE</div>
         
-        <div style="font-size: 13px; line-height: 1.5;">
+        <div style="font-size: 13px; line-height: 1.5; margin-top: 2px;">
           <div>Outbound Anchor: <strong id="ui-anchor-outbound" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
           <div>Return Anchor: <strong id="ui-anchor-return" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
         </div>
         
-        <div style="margin-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: bold;">
-          HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET):
+        <div style="margin-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: bold; text-align: center;">
+          HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET)
         </div>
         <div class="gauge-container" id="container-price-spectrum-gauge">
           <div class="gauge-segment gauge-low" id="ui-gauge-low-bounds">$320</div>
@@ -401,7 +412,7 @@ input[type="date"] { color-scheme: dark light; }
       <div id="active-dashboard-canvas" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
         
         <div class="panel panel-chart">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
             <div class="panel-title" style="margin-bottom: 0;"><span id="ui-chart-horizon-label">14</span>-DAY PRICE TRAJECTORY</div>
             <!-- Custom Select: Chart Format -->
             <div class="custom-select" id="cs-chart-format" data-value="bar" style="width: 140px;">
@@ -415,7 +426,7 @@ input[type="date"] { color-scheme: dark light; }
           
           <div class="chart-wrapper">
             <div class="y-axis">
-              <span style="font-weight: bold; color: var(--text-main);">Price (<span class="ui-currency-label">USD</span>)</span>
+              <div style="line-height: 1.1; font-weight: bold; color: var(--text-main);">Price<br><span style="font-size: 9px; color: var(--text-muted);">(<span class="ui-currency-label">USD</span>)</span></div>
               <span id="ui-y-axis-high">$580</span>
               <span id="ui-y-axis-mid">$445</span>
               <span id="ui-y-axis-low">$310</span>
@@ -424,34 +435,29 @@ input[type="date"] { color-scheme: dark light; }
               <!-- Bars or SVG injected by JS -->
             </div>
           </div>
-
-          <div class="anchor-labels-container">
-            <div class="anchor-label-block">Outbound<br>Anchor</div>
-            <div class="anchor-label-block">Return<br>Anchor</div>
-          </div>
         </div>
 
         <div class="details-wrapper">
           <div class="panel details-panel-75">
             <div class="panel-title">Selected Itinerary Details</div>
-            <div style="font-size: 13px; line-height: 1.6; margin-top: 5px;" id="ui-itinerary-details">
+            <div style="font-size: 13px; line-height: 1.6; margin-top: 2px;" id="ui-itinerary-details">
               🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 PDT ➔ 17:05 JST (+1)<br>
               🛬 Return: JL 001 (HND ➔ SFO) 14:15 JST ➔ 17:50 PDT
             </div>
           </div>
           <div class="panel details-panel-25">
             <div class="panel-title">Flight Number History Log</div>
-            <ul class="history-list" id="ui-history-log">
+            <ul class="history-list" id="ui-history-log" style="margin-top: 2px;">
               <!-- Log injected by JS -->
             </ul>
           </div>
         </div>
 
         <div class="action-btn-row">
-          <button class="secondary-btn" id="ui-btn-book" style="background: var(--success); color: var(--bg-base);">💳 BOOK NOW</button>
-          <button class="secondary-btn" id="ui-btn-google-flights">🌐 GOOGLE FLIGHTS</button>
+          <button class="secondary-btn" id="ui-btn-book" style="background: var(--success); color: var(--bg-base);" onclick="ApplicationLogic.openFlightRouter()">💳 BOOK NOW</button>
+          <button class="secondary-btn" id="ui-btn-google-flights" onclick="ApplicationLogic.openFlightRouter()">🌐 GOOGLE FLIGHTS</button>
           <button class="secondary-btn" id="ui-btn-export-csv">📥 EXPORT CSV</button>
-          <button class="secondary-btn" id="ui-btn-untrack" style="color: var(--danger); border-color: var(--danger);" onclick="UIEngine.openModal('modal-confirm-untrack')">🗑️ UNTRACK</button>
+          <button class="secondary-btn" id="ui-btn-untrack" style="color: var(--danger); border-color: var(--danger);" onclick="UIEngine.openModal('modal-confirm-untrack')">🗑️️ UNTRACK</button>
         </div>
 
       </div>
@@ -469,7 +475,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">🎨 SELECT THEME</span>
-      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
     </div>
     <div class="modal-body">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" id="theme-grid">
@@ -625,9 +631,9 @@ input[type="date"] { color-scheme: dark light; }
       <div class="form-group">
         <label>IGNAV USAGE TELEMETRY</label>
         <div style="padding-left: 14px; margin-top: 8px;">
-          <div style="font-size: 14px; color: var(--text-main);">Current Window: Oct 01 - Oct 31, 2026</div>
+          <div style="font-size: 14px; color: var(--text-main); font-weight: bold;"><span style="color: var(--text-muted); font-weight: normal;">Current Window:</span> Oct 01 - Oct 31, 2026</div>
           <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
-            <div style="font-size: 14px; color: var(--accent);">Ignav Fetches: <span id="ui-settings-fetch-count">412</span> / 1000</div>
+            <div style="font-size: 14px; color: var(--text-main); font-weight: bold;"><span style="color: var(--text-muted); font-weight: normal;">Ignav Fetches:</span> <span id="ui-settings-fetch-count">412</span> / 1000</div>
             <button class="secondary-btn" style="padding: 4px 8px; font-size: 11px;" onclick="UIEngine.openModal('modal-fetch-override')">EDIT</button>
           </div>
         </div>
@@ -740,6 +746,50 @@ input[type="date"] { color-scheme: dark light; }
   </div>
 </div>
 
+<!-- 8. Flight Search Router Modal (FEAT-19) -->
+<div class="modal-overlay" id="modal-flight-router">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <span>✈️ FLIGHT SEARCH ROUTER</span>
+      <button class="secondary-btn" style="width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-flight-router')">✕</button>
+    </div>
+    <div class="modal-body">
+      
+      <div class="form-group">
+        <label>ITINERARY SUMMARY</label>
+        <div style="font-size: 14px; font-weight: bold; color: var(--text-main); margin-top: 5px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius);" id="ui-router-summary">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 10px;">
+        <label>MONITORED AIRLINES (Direct Search)</label>
+        <div id="container-router-airlines" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+
+      <div class="form-group">
+        <label>AGGREGATOR SEARCH</label>
+        <div class="router-card" onclick="ApplicationLogic.fireRouterStub('Google Flights')" style="margin-top: 8px; border-color: var(--accent);">
+          <div>
+            <div class="router-card-title">🌐 Search All on Google Flights</div>
+            <div class="router-card-sub">Compare all available carriers (Zero API Cost)</div>
+          </div>
+          <span style="font-size: 18px;">➔</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end;">
+      <button class="secondary-btn" onclick="UIEngine.closeModal('modal-flight-router')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- ==========================================================================
      LAYER 5: APPLICATION LOGIC
      ========================================================================== -->
@@ -799,7 +849,15 @@ const AIRPORT_DICTIONARY = [
   { iata: "CDG", city: "Paris", name: "Charles de Gaulle" }, { iata: "YYZ", city: "Toronto", name: "Pearson Int." },
   { iata: "YVR", city: "Vancouver", name: "Vancouver Int." }, { iata: "YUL", city: "Montreal", name: "Trudeau" },
   { iata: "YYC", city: "Calgary", name: "Calgary Int." }, { iata: "YOW", city: "Ottawa", name: "Macdonald-Cartier" },
-  { iata: "MCO", city: "Orlando", name: "Orlando Int." }, { iata: "SLC", city: "Salt Lake City", name: "Salt Lake City Int." }
+  { iata: "MCO", city: "Orlando", name: "Orlando Int." }, { iata: "SLC", city: "Salt Lake City", name: "Salt Lake City Int." },
+  { iata: "ATL", city: "Atlanta", name: "Hartsfield-Jackson" }, { iata: "DFW", city: "Dallas/Fort Worth", name: "DFW Int." },
+  { iata: "DEN", city: "Denver", name: "Denver Int." }, { iata: "MIA", city: "Miami", name: "Miami Int." },
+  { iata: "CLT", city: "Charlotte", name: "Douglas Int." }, { iata: "PHX", city: "Phoenix", name: "Sky Harbor" },
+  { iata: "IAH", city: "Houston", name: "George Bush Intercontinental" }, { iata: "BOS", city: "Boston", name: "Logan Int." },
+  { iata: "MSP", city: "Minneapolis", name: "St. Paul Int." }, { iata: "DTW", city: "Detroit", name: "Metropolitan Wayne" },
+  { iata: "PHL", city: "Philadelphia", name: "Philadelphia Int." }, { iata: "SAN", city: "San Diego", name: "San Diego Int." },
+  { iata: "TPA", city: "Tampa", name: "Tampa Int." }, { iata: "PDX", city: "Portland", name: "Portland Int." },
+  { iata: "HNL", city: "Honolulu", name: "Daniel K. Inouye Int." }
 ];
 
 const AIRLINE_GROUPS = {
@@ -861,13 +919,16 @@ const CustomSelectEngine = {
         if(select.id === 'cs-chart-format') {
           if(ApplicationLogic.currentlySelectedRouteId) {
             const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === ApplicationLogic.currentlySelectedRouteId);
-            ApplicationLogic.updateOracleUI(route);
+            if(route) ApplicationLogic.updateOracleUI(route);
           }
         }
         if(select.id === 'cs-active-monitor') {
-          ApplicationLogic.currentlySelectedRouteId = val;
-          const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === val);
-          if(route) ApplicationLogic.updateOracleUI(route);
+          ApplicationLogic.currentlySelectedRouteId = val === 'none' ? null : val;
+          ApplicationLogic.renderDashboardState();
+          if(ApplicationLogic.currentlySelectedRouteId) {
+            const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === ApplicationLogic.currentlySelectedRouteId);
+            if(route) ApplicationLogic.updateOracleUI(route);
+          }
         }
       };
     });
@@ -926,7 +987,7 @@ const ApplicationLogic = {
     CustomSelectEngine.init();
     this.renderDashboardState();
     
-    // Fallback static UI hydration guards (in HTML but re-injected if empty)
+    // Fallback static UI hydration guards
     const btnSettings = document.getElementById('ui-btn-settings');
     if (btnSettings && !btnSettings.innerHTML.trim()) btnSettings.innerHTML = "⚙️";
     const btnTheme = document.getElementById('ui-btn-theme');
@@ -963,7 +1024,7 @@ const ApplicationLogic = {
       btnShf.style.display = "flex";
     }
 
-    // Action buttons & Modals
+    // Action buttons
     document.getElementById('ui-btn-add-flight-main').innerText = window.CONFIG.BTN_ADD_FLIGHT_MAIN;
     document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT_EMPTY;
     document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
@@ -1077,7 +1138,7 @@ const ApplicationLogic = {
           diffDays = Math.max(5, Math.min(diffDays, 30));
           const range = document.getElementById('input-genesis-sweep-horizon-days');
           range.value = diffDays;
-          range.max = Math.max(30, diffDays); // Ensure slider can handle it
+          range.max = Math.max(30, diffDays); 
           document.getElementById('ui-slider-val').innerText = diffDays;
         }
       }
@@ -1145,7 +1206,6 @@ const ApplicationLogic = {
   },
 
   openAddFlightModal() {
-    // Reset Form
     document.getElementById('input-trip-tag').value = "";
     document.querySelector('input[name="input-currency-selection"][value="USD"]').checked = true;
     document.getElementById('input-origin-iata').value = "SFO - San Francisco (SFO Int.)";
@@ -1161,7 +1221,6 @@ const ApplicationLogic = {
     CustomSelectEngine.setValue('cs-cabin-class', window.CONFIG.DEFAULT_CABIN_CLASS);
     CustomSelectEngine.setValue('cs-add-airline', '', window.CONFIG.PLACEHOLDER_ADD_CARRIER);
     
-    // Restore all dropdown options and clear pills
     document.getElementById('container-airline-tags').innerHTML = "";
     document.querySelectorAll('#cs-options-airline .custom-option').forEach(opt => opt.classList.remove('disabled'));
     
@@ -1179,7 +1238,6 @@ const ApplicationLogic = {
     div.innerHTML = `${code} <span onclick="ApplicationLogic.removeAirlinePill('${code}', this.parentElement)">✕</span>`;
     container.appendChild(div);
     
-    // Hide and disable option
     const option = document.querySelector(`#cs-options-airline .custom-option[data-value="${code}"]`);
     if(option) option.classList.add('disabled');
     
@@ -1203,7 +1261,9 @@ const ApplicationLogic = {
     const selectOptions = document.querySelector('#cs-active-monitor .custom-select-options');
     selectOptions.innerHTML = `<div class="custom-option ${this.currentlySelectedRouteId ? '' : 'selected'}" data-value="none">-- Select Route --</div>`;
 
-    if (this.activeMonitoredRoutesList.length === 0) {
+    const hasActiveSelection = this.activeMonitoredRoutesList.length > 0 && this.currentlySelectedRouteId && this.currentlySelectedRouteId !== 'none';
+
+    if (!hasActiveSelection) {
       emptyCanvas.classList.remove('hidden');
       activeCanvas.classList.add('hidden');
       oraclePanel.style.display = "none";
@@ -1221,10 +1281,9 @@ const ApplicationLogic = {
       
       const activeRoute = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
       if(activeRoute) {
-        CustomSelectEngine.setValue('cs-active-monitor', activeRoute.id, `🏷️ ${activeRoute.tag} (${activeRoute.origin} ➔ ${activeRoute.dest}) [${activeRoute.currency}]`);
+        CustomSelectEngine.setValue('cs-active-monitor', activeRoute.id, `🏷️️ ${activeRoute.tag} (${activeRoute.origin} ➔ ${activeRoute.dest}) [${activeRoute.currency}]`);
       }
     }
-    // Rebind options for this select
     CustomSelectEngine.bindOptions(document.getElementById('cs-active-monitor'));
   },
 
@@ -1234,8 +1293,15 @@ const ApplicationLogic = {
     const currency = document.querySelector('input[name="input-currency-selection"]:checked').value;
     const horizon = parseInt(document.getElementById('input-genesis-sweep-horizon-days').value);
     const tag = document.getElementById('input-trip-tag').value || "Untagged Trip";
+    
+    const tripType = CustomSelectEngine.getValue('cs-trip-type') || "round-trip";
+    const depDateRaw = document.getElementById('input-departure-date').value;
+    const retDateRaw = document.getElementById('input-return-date').value;
+    const pax = document.getElementById('input-passenger-count').value;
+    const cabin = CustomSelectEngine.getValue('cs-cabin-class') || "economy";
 
-    // Defensive parsing
+    const airlines = Array.from(document.querySelectorAll('#container-airline-tags .airline-pill')).map(p => p.getAttribute('data-code'));
+
     const origin = originRaw.slice(0, 3).toUpperCase();
     const dest = destRaw.slice(0, 3).toUpperCase();
 
@@ -1246,7 +1312,6 @@ const ApplicationLogic = {
 
     const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'});
     
-    // Gen Mock Data Curve
     let dataVals = [];
     const baseCurrent = Math.floor(Math.random() * 200) + 300;
     for(let i=0; i<horizon; i++) {
@@ -1265,7 +1330,15 @@ const ApplicationLogic = {
       horizon: horizon,
       currentPrice: baseCurrent,
       dataPoints: dataVals,
-      historyLog: [`${todayStr} : DL 412 (Genesis)`]
+      historyLog: [`${todayStr} : DL 412 (Genesis)`],
+      
+      // Metadata for Router Modal
+      tripType: tripType,
+      depDate: depDateRaw,
+      retDate: retDateRaw,
+      pax: pax,
+      cabin: cabin,
+      airlines: airlines
     };
 
     this.activeMonitoredRoutesList.push(routeObj);
@@ -1275,7 +1348,6 @@ const ApplicationLogic = {
     UIEngine.closeModal('modal-add-flight');
     this.renderDashboardState();
     
-    // Toast
     UIEngine.showToast(`${window.CONFIG.TOAST_FLIGHT_ADDED} (${origin} ➔ ${dest})`);
   },
 
@@ -1297,7 +1369,6 @@ const ApplicationLogic = {
       badge.innerText = `🟡 HOLD: PRICES ELEVATED`;
     }
 
-    // Dual Anchors
     document.getElementById('ui-anchor-outbound').innerText = "$" + route.dataPoints[0].toFixed(2);
     document.getElementById('ui-anchor-return').innerText = "$" + route.dataPoints[route.horizon-1].toFixed(2);
     
@@ -1313,12 +1384,10 @@ const ApplicationLogic = {
     document.getElementById('ui-gauge-low-bounds').innerText = `$${cLow}`;
     document.getElementById('ui-gauge-hi-bounds').innerText = `$${cHigh}`;
 
-    // Y-Axis Exact Calibration (DEF-09)
     document.getElementById('ui-y-axis-high').innerText = `$${cHigh}`;
     document.getElementById('ui-y-axis-mid').innerText = `$${cMid}`;
     document.getElementById('ui-y-axis-low').innerText = `$${cLow}`;
 
-    // Chart Gen Engine (FEAT-15)
     const chart = document.getElementById('ui-mock-chart-container');
     chart.innerHTML = "";
     
@@ -1344,10 +1413,17 @@ const ApplicationLogic = {
           label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
           container.appendChild(label);
         }
+        
+        if (i === 0 || i === route.horizon - 1) {
+          const anchorLabel = document.createElement('div');
+          anchorLabel.className = "anchor-label-block";
+          anchorLabel.innerHTML = `${i === 0 ? "Outbound" : "Return"}<br>Anchor`;
+          container.appendChild(anchorLabel);
+        }
+        
         chart.appendChild(container);
       }
     } else {
-      // Line Graph (SVG)
       const svgLayer = document.createElement('div');
       svgLayer.className = 'chart-svg-layer';
       
@@ -1355,6 +1431,7 @@ const ApplicationLogic = {
       const svg = document.createElementNS(svgns, "svg");
       svg.setAttribute("width", "100%");
       svg.setAttribute("height", "100%");
+      svg.setAttribute("viewBox", "0 0 100 100");
       svg.setAttribute("preserveAspectRatio", "none");
       
       let pathD = "";
@@ -1362,17 +1439,15 @@ const ApplicationLogic = {
         const px = (i / (route.horizon - 1)) * 100;
         const py = 100 - (((route.dataPoints[i] - cLow) / cRange) * 100);
         
-        // Node
         const circle = document.createElementNS(svgns, "circle");
-        circle.setAttribute("cx", `${px}%`);
-        circle.setAttribute("cy", `${py}%`);
-        circle.setAttribute("r", "3");
+        circle.setAttribute("cx", px);
+        circle.setAttribute("cy", py);
+        circle.setAttribute("r", "2");
         circle.setAttribute("fill", (i===0 || i===route.horizon-1) ? "var(--success)" : "var(--accent)");
         svg.appendChild(circle);
         
         pathD += `${i===0 ? 'M' : 'L'} ${px} ${py} `;
         
-        // Labels
         if (i === 0 || i === Math.floor(route.horizon/2) || i === route.horizon - 1) {
           const container = document.createElement('div');
           container.className = "chart-bar-container";
@@ -1386,6 +1461,13 @@ const ApplicationLogic = {
           const d = new Date(baseDate); d.setDate(d.getDate() + i);
           label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
           container.appendChild(label);
+          
+          if (i === 0 || i === route.horizon - 1) {
+            const anchorLabel = document.createElement('div');
+            anchorLabel.className = "anchor-label-block";
+            anchorLabel.innerHTML = `${i === 0 ? "Outbound" : "Return"}<br>Anchor`;
+            container.appendChild(anchorLabel);
+          }
           chart.appendChild(container);
         }
       }
@@ -1393,7 +1475,7 @@ const ApplicationLogic = {
       const path = document.createElementNS(svgns, "path");
       path.setAttribute("d", pathD);
       path.setAttribute("stroke", "var(--accent)");
-      path.setAttribute("stroke-width", "2");
+      path.setAttribute("stroke-width", "1");
       path.setAttribute("fill", "none");
       path.setAttribute("vector-effect", "non-scaling-stroke");
       svg.insertBefore(path, svg.firstChild);
@@ -1402,7 +1484,6 @@ const ApplicationLogic = {
       chart.appendChild(svgLayer);
     }
 
-    // History Log
     const logList = document.getElementById('ui-history-log');
     logList.innerHTML = "";
     route.historyLog.forEach(log => {
@@ -1413,6 +1494,53 @@ const ApplicationLogic = {
 
     document.getElementById('ui-trueup-required').innerText = route.horizon;
     document.getElementById('ui-trueup-projected').innerText = this.monthlyApiFetchCounter + route.horizon;
+  },
+
+  openFlightRouter() {
+    if(!this.currentlySelectedRouteId) return;
+    const route = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
+    if(!route) return;
+    
+    // Build Itinerary Summary
+    const d1 = route.depDate ? new Date(route.depDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'TBD';
+    const d2 = route.retDate ? new Date(route.retDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'TBD';
+    const typeStr = route.tripType === 'one-way' ? 'One-Way' : 'Round-Trip';
+    const cabStr = route.cabin.charAt(0).toUpperCase() + route.cabin.slice(1);
+    
+    document.getElementById('ui-router-summary').innerHTML = 
+      `${route.origin} ➔ ${route.dest} | ${typeStr} | ${d1} - ${d2} | ${route.pax} Pax | ${cabStr}`;
+
+    // Build Monitored Airlines Stubs
+    const container = document.getElementById('container-router-airlines');
+    container.innerHTML = "";
+    
+    if (route.airlines && route.airlines.length > 0) {
+      route.airlines.forEach(code => {
+        let nameStr = code;
+        for(let r in AIRLINE_GROUPS) {
+          const match = AIRLINE_GROUPS[r].find(a => a.code === code);
+          if(match) { nameStr = match.name; break; }
+        }
+        
+        container.innerHTML += `
+          <div class="router-card" onclick="ApplicationLogic.fireRouterStub('${nameStr}')">
+            <div>
+              <div class="router-card-title">🛫 Search on ${nameStr}</div>
+              <div class="router-card-sub">Deep-link to carrier checkout</div>
+            </div>
+            <span style="font-size: 18px;">➔</span>
+          </div>
+        `;
+      });
+    } else {
+      container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 5px;">No specific carriers pinned. Defaulting to aggregator.</div>`;
+    }
+
+    UIEngine.openModal('modal-flight-router');
+  },
+
+  fireRouterStub(targetName) {
+    UIEngine.showToast(`🔗 Link routing to ${targetName} staged for API Phase`);
   },
 
   shuffleData() {
