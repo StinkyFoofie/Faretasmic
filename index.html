@@ -10,7 +10,7 @@ window.CONFIG = {
      SECTION 1: APP IDENTITY (Alphabetical)
      ======================================================================== */
   APP_TITLE: "✨ Faretasmic!!!",
-  APP_VERSION: "v0.4",
+  APP_VERSION: "v0.5",
 
   /* ========================================================================
      SECTION 2: FIREBASE CONFIGURATION
@@ -39,14 +39,29 @@ window.CONFIG = {
      ======================================================================== */
   BTN_ADD_FLIGHT_EMPTY: "Add Flight",
   BTN_ADD_FLIGHT_MAIN: "Add Flight",
-  BTN_SETTINGS: "Settings",
+  BTN_BOOK_NOW: "💳 BOOK NOW",
+  BTN_EXPORT_CSV: "📥 EXPORT CSV",
+  BTN_GOOGLE_FLIGHTS: "🌐 GOOGLE FLIGHTS",
   BTN_START_TRACKING: "Start Tracking",
-  BTN_THEME: "Theme",
+  BTN_UNTRACK: "🗑️ UNTRACK",
+
+  /* NOTE: The following 3 icon variables must be single-glyph emojis, NOT text strings */
+  EMOJI_BTN_SETTINGS: "⚙️",
+  EMOJI_BTN_SHUFFLE_QA: "🎲",
+  EMOJI_BTN_THEME: "🎨",
+
   EMPTY_STATE_SUBTITLE: "Configure a route to begin price surveillance.",
   EMPTY_STATE_TITLE: "🔭 No Flights Monitored",
   PLACEHOLDER_ADD_CARRIER: "+ Add Carrier...",
   PLACEHOLDER_DESTINATION_IATA: "Select Destination",
-  PLACEHOLDER_TRIP_NAME: "e.g. Joe's Vacation"
+  PLACEHOLDER_TRIP_NAME: "Another Disney Vacation...",
+  TOAST_FLIGHT_ADDED: "🚀 Flight Added! Surveillance Active",
+  TOAST_SETTINGS_SAVED: "⚙️ Settings Successfully Saved",
+
+  /* Header icon hover tooltips */
+  TOOLTIP_BTN_SETTINGS: "Settings",
+  TOOLTIP_BTN_SHUFFLE_QA: "Shuffle QA",
+  TOOLTIP_BTN_THEME: "Theme"
 };
 </script>
 
@@ -107,20 +122,13 @@ body.modal-open { overflow: hidden; }
 h1, h2, h3 { font-family: var(--font-heading); }
 
 /* Form Elements Normalization */
-button, input, select { 
+button, input, textarea { 
   font-family: var(--font-main); outline: none; border: 1px solid var(--border); 
   border-radius: var(--radius); background: var(--bg-input); color: var(--text-main);
   touch-action: manipulation; 
 }
 button { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; white-space: normal; }
 button:hover { border-color: var(--border-hover); background: var(--bg-surface-hover); }
-
-/* Select overrides to prevent OS native theme bleed */
-select, select optgroup, select option {
-  background: var(--bg-surface);
-  color: var(--text-main);
-  color-scheme: dark light;
-}
 
 /* High Contrast Calendar Picker & Native color-scheme */
 input[type="date"] { color-scheme: dark light; }
@@ -130,8 +138,8 @@ input[type="date"] { color-scheme: dark light; }
 [data-theme="cozy-village"] ::-webkit-calendar-picker-indicator { filter: invert(0.2); }
 
 /* Font Adjustments */
-[data-theme="retro-arcade"] input, [data-theme="retro-arcade"] select, [data-theme="retro-arcade"] button { font-size: 11px; }
-[data-theme="wasteland-terminal"] body, [data-theme="wasteland-terminal"] input, [data-theme="wasteland-terminal"] select, [data-theme="wasteland-terminal"] button { font-size: 18px; }
+[data-theme="retro-arcade"] input, [data-theme="retro-arcade"] button, [data-theme="retro-arcade"] .custom-select-trigger, [data-theme="retro-arcade"] .custom-option { font-size: 11px; }
+[data-theme="wasteland-terminal"] body, [data-theme="wasteland-terminal"] input, [data-theme="wasteland-terminal"] button, [data-theme="wasteland-terminal"] .custom-select-trigger, [data-theme="wasteland-terminal"] .custom-option { font-size: 18px; }
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -140,7 +148,7 @@ input[type="date"] { color-scheme: dark light; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
 /* --- 3. LAYOUT ARCHITECTURE --- */
-.app-container { max-width: 1200px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
+.app-container { width: 100%; min-height: 100vh; padding: 12px 20px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
 
 /* Responsive System Tray */
 .header-tray { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; background: var(--bg-surface); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); gap: 10px; }
@@ -149,7 +157,7 @@ input[type="date"] { color-scheme: dark light; }
 .header-actions { display: flex; gap: 8px; }
 
 /* High-Density 2-Row Telemetry */
-.telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 24px; }
+.telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 36px; }
 .telemetry-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .telemetry-indicator { font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .telemetry-text-group { display: flex; flex-direction: column; justify-content: center; line-height: 1.2; text-align: left; }
@@ -175,61 +183,84 @@ input[type="date"] { color-scheme: dark light; }
 .btn-group-equal { display: flex; gap: 10px; width: 100%; }
 .btn-group-equal > button { flex: 1 1 0; min-height: 42px; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
 .btn-icon { padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+#ui-btn-settings { font-size: 20px; }
 
-.status-badge { display: inline-block; padding: 6px 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
+.status-badge { display: inline-block; padding: 0 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
 .status-buy { background: var(--success); color: var(--text-inverse); }
 .status-hold { background: var(--warning); color: var(--text-inverse); }
 
-/* --- PRICE GAUGE & CHART --- */
-.gauge-container { width: 100%; height: 24px; display: flex; border-radius: var(--radius); overflow: hidden; position: relative; margin-top: 10px; border: 1px solid var(--border); }
+/* --- 5. CUSTOM IN-DOM SELECTS (FEAT-16) --- */
+.custom-select { position: relative; width: 100%; user-select: none; }
+.custom-select-trigger { padding: 10px; font-size: 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; height: 38px; cursor: pointer; color: var(--text-main); }
+.custom-select-trigger:hover { border-color: var(--border-hover); }
+.custom-select-options { position: absolute; top: 100%; left: 0; width: 100%; max-height: 200px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); margin-top: 4px; }
+.custom-select.open .custom-select-options { display: block; }
+.custom-option { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); color: var(--text-main); }
+.custom-option:hover { background: var(--bg-surface-hover); }
+.custom-option.selected { background: var(--accent); color: var(--text-inverse); font-weight: bold; }
+.custom-option.disabled { display: none; } 
+.custom-optgroup { padding: 5px 10px; font-size: 11px; font-weight: bold; color: var(--text-muted); background: var(--bg-input); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+
+/* --- 6. PRICE GAUGE & CHART --- */
+#badge-oracle-recommendation-status, #container-price-spectrum-gauge {
+  height: 30px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius); margin-top: 6px; margin-bottom: 8px; width: 100%;
+}
+.gauge-container { overflow: hidden; position: relative; border: 1px solid var(--border); flex-direction: row; }
 .gauge-segment { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); }
 .gauge-low { flex: 1; background: var(--success); opacity: 0.8; }
 .gauge-typ { flex: 2; background: var(--warning); opacity: 0.8; }
 .gauge-hi { flex: 1; background: var(--danger); opacity: 0.8; }
-.gauge-marker { position: absolute; top: -2px; width: 2px; height: 28px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+.gauge-marker { position: absolute; top: -2px; width: 2px; height: 34px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 .gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
 
-.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 25px; }
+.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 5px; }
 .y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 50px; }
 .mock-chart { flex: 1; height: 160px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px 10px 28px 10px; gap: 4px; position: relative; }
-.chart-bar-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; }
+.chart-bar-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; z-index: 2; }
 .chart-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; position: relative; min-height: 4px; transition: height 0.3s ease; }
 .chart-bar.anchor { background: var(--success); opacity: 1; }
 .x-axis-label { position: absolute; bottom: -24px; font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: center; line-height: 1.1; }
 .x-axis-label .date { display: block; font-weight: bold; color: var(--text-main); font-size: 10px; }
 
-/* External Anchor Legends */
-.anchor-label { position: absolute; bottom: -52px; font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; white-space: nowrap; }
+/* SVG Line Chart Sublayer */
+.chart-svg-layer { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 28px; z-index: 1; pointer-events: none; }
 
-/* Itinerary Details & History Log */
-.details-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-@media(min-width: 600px) { .details-grid { grid-template-columns: 1fr 1fr; } }
+/* External Anchor Legends */
+.anchor-labels-container { display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--text-muted); margin-top: 2px; padding: 0 10px; }
+.anchor-label-block { text-align: center; line-height: 1.3; }
+
+/* --- 7. DASHBOARD GRID & ACTION ROW --- */
+.details-wrapper { display: flex; gap: 15px; flex-wrap: wrap; width: 100%; }
+.details-panel-75 { flex: 3 1 400px; }
+.details-panel-25 { flex: 1 1 150px; }
+
+.action-btn-row { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+.action-btn-row > button { flex: 1 1 180px; min-height: 42px; }
+
 .history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; list-style: none; }
 
-/* --- 5. MODALS & FORMS --- */
+/* --- 8. MODALS & FORMS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
 .modal-overlay.active { display: flex; }
 .modal-content { background: var(--bg-surface); border: 1px solid var(--accent); border-radius: var(--radius); width: 95vw; max-width: 580px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow); }
 .modal-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-.modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+.modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; } /* Uniform 12px gap */
 .modal-footer { padding: 15px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
-/* Theme Modal Locks */
+/* Theme Modal */
 #modal-theme .modal-content { width: 580px; max-width: 92vw; }
+#modal-theme .modal-header .secondary-btn { width: 32px; height: 32px; min-width: 32px; min-height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; }
 #modal-theme .primary-btn, #modal-theme .secondary-btn { height: 52px; min-height: 52px; max-height: 52px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: normal; text-align: center; line-height: 1.2; }
+.theme-active { border: 2px solid var(--accent) !important; background: var(--bg-surface-hover) !important; color: var(--accent) !important; box-shadow: 0 0 10px var(--accent); }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; position: relative; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; position: relative; margin-bottom: 0; }
 .form-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
 .form-control { padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; height: 38px; min-height: 38px; -webkit-appearance: none; appearance: none; }
 .form-row { display: flex; gap: 10px; align-items: flex-start; }
 .form-row > * { flex: 1; min-width: 0; }
 
-/* Custom Dropdown Wrapper */
-.select-wrapper { position: relative; display: flex; flex: 1; }
-.select-wrapper select { width: 100%; padding-right: 30px; appearance: none; -webkit-appearance: none; }
-.select-wrapper::after { content: "▼"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 10px; color: var(--text-main); opacity: 0.7; }
-
-.autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; max-height: 150px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); }
+.autocomplete-dropdown { position: absolute; top: 100%; left: 0; width: 100%; max-height: 150px; overflow-y: auto; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); z-index: 10000; display: none; box-shadow: var(--shadow); margin-top: 4px; }
 .autocomplete-item { padding: 10px; font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--border-hover); }
 .autocomplete-item:hover { background: var(--bg-surface-hover); }
 
@@ -242,9 +273,19 @@ input[type="date"] { color-scheme: dark light; }
 
 #empty-state-canvas { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); gap: 15px; }
 .hidden { display: none !important; }
+
+/* --- 9. TOAST NOTIFICATIONS (FEAT-17, FEAT-18) --- */
+.toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; display: flex; flex-direction: column; gap: 10px; }
+.theme-toast { background: var(--bg-surface); color: var(--text-main); border: 1px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); padding: 10px 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; animation: toastFlyIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, toastFlyOut 0.4s ease-in 2.65s forwards; }
+@keyframes toastFlyIn { from { opacity: 0; transform: translateY(-30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toastFlyOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-40px) scale(0.85); } }
+
 </style>
 </head>
 <body>
+
+<!-- Toast Mount Point -->
+<div id="toast-container" class="toast-container"></div>
 
 <!-- ==========================================================================
      LAYER 4: UI COMPONENTS & STATIC MARKUP
@@ -255,7 +296,7 @@ input[type="date"] { color-scheme: dark light; }
   <header class="header-tray">
     <div class="header-brand">
       <h2 id="ui-app-title">✨ Faretasmic!</h2>
-      <span id="ui-app-version" class="app-version">v0.4</span>
+      <span id="ui-app-version" class="app-version">v0.5</span>
     </div>
     
     <div class="telemetry-tray">
@@ -294,9 +335,9 @@ input[type="date"] { color-scheme: dark light; }
     </div>
 
     <div class="header-actions">
-      <button class="secondary-btn btn-icon" id="ui-btn-shuffle" onclick="ApplicationLogic.shuffleData()" title="Shuffle QA" style="display: none;">🎲</button>
-      <button class="secondary-btn btn-icon" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')" title="Theme">🎨</button>
-      <button class="secondary-btn btn-icon" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-shuffle" onclick="ApplicationLogic.shuffleData()" style="display: none;">🎲</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')">🎨</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')">⚙</button>
     </div>
   </header>
 
@@ -308,11 +349,16 @@ input[type="date"] { color-scheme: dark light; }
       
       <div class="panel">
         <div class="panel-title">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
-        <div class="select-wrapper">
-          <select class="form-control" id="select-active-monitored-route">
-            <option value="none">-- Select Route --</option>
-          </select>
+        
+        <!-- Custom Select: Active Monitors -->
+        <div class="custom-select" id="cs-active-monitor" data-value="none">
+          <div class="custom-select-trigger"><span class="c-text">-- Select Route --</span> <span class="c-arrow">▼</span></div>
+          <div class="custom-select-options">
+            <div class="custom-option selected" data-value="none">-- Select Route --</div>
+            <!-- Dynamically populated -->
+          </div>
         </div>
+
         <div class="form-row btn-group-equal" style="margin-top: 5px;">
           <button class="primary-btn" id="ui-btn-add-flight-main" onclick="ApplicationLogic.openAddFlightModal()">Add Flight</button>
           <button class="secondary-btn" onclick="UIEngine.openModal('modal-true-up')" id="btn-manual-fetch" disabled>⚡ Fetch</button>
@@ -321,14 +367,14 @@ input[type="date"] { color-scheme: dark light; }
 
       <div class="panel" id="panel-oracle" style="display: none;">
         <div class="panel-title">Predictive Oracle Engine</div>
-        <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 30D BASELINE</div>
+        <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 14 DAY BASELINE</div>
         
-        <div style="font-size: 13px; margin-top: 10px; line-height: 1.5;">
+        <div style="font-size: 13px; line-height: 1.5;">
           <div>Outbound Anchor: <strong id="ui-anchor-outbound" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
           <div>Return Anchor: <strong id="ui-anchor-return" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
         </div>
         
-        <div style="margin-top: 15px; font-size: 13px; color: var(--text-muted); font-weight: bold;">
+        <div style="margin-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: bold;">
           HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET):
         </div>
         <div class="gauge-container" id="container-price-spectrum-gauge">
@@ -355,7 +401,17 @@ input[type="date"] { color-scheme: dark light; }
       <div id="active-dashboard-canvas" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
         
         <div class="panel panel-chart">
-          <div class="panel-title"><span id="ui-chart-horizon-label">14</span>-DAY PRICE TRAJECTORY</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <div class="panel-title" style="margin-bottom: 0;"><span id="ui-chart-horizon-label">14</span>-DAY PRICE TRAJECTORY</div>
+            <!-- Custom Select: Chart Format -->
+            <div class="custom-select" id="cs-chart-format" data-value="bar" style="width: 140px;">
+              <div class="custom-select-trigger" style="height: 28px; padding: 5px 10px; font-size: 11px;"><span class="c-text">📊 Bar Graph</span> <span class="c-arrow">▼</span></div>
+              <div class="custom-select-options">
+                <div class="custom-option selected" data-value="bar">📊 Bar Graph</div>
+                <div class="custom-option" data-value="line">📈 Line Graph</div>
+              </div>
+            </div>
+          </div>
           
           <div class="chart-wrapper">
             <div class="y-axis">
@@ -365,40 +421,39 @@ input[type="date"] { color-scheme: dark light; }
               <span id="ui-y-axis-low">$310</span>
             </div>
             <div class="mock-chart" id="ui-mock-chart-container">
-              <!-- Bars injected by JS -->
+              <!-- Bars or SVG injected by JS -->
             </div>
+          </div>
+
+          <div class="anchor-labels-container">
+            <div class="anchor-label-block">Outbound<br>Anchor</div>
+            <div class="anchor-label-block">Return<br>Anchor</div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="details-grid">
-            <div>
-              <div class="panel-title">Selected Itinerary Details</div>
-              <div style="font-size: 13px; line-height: 1.6; margin-top: 5px;" id="ui-itinerary-details">
-                🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 PDT ➔ 17:05 JST (+1)<br>
-                🛬 Return: JL 001 (HND ➔ SFO) 14:15 JST ➔ 17:50 PDT
-              </div>
+        <div class="details-wrapper">
+          <div class="panel details-panel-75">
+            <div class="panel-title">Selected Itinerary Details</div>
+            <div style="font-size: 13px; line-height: 1.6; margin-top: 5px;" id="ui-itinerary-details">
+              🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 PDT ➔ 17:05 JST (+1)<br>
+              🛬 Return: JL 001 (HND ➔ SFO) 14:15 JST ➔ 17:50 PDT
             </div>
-            <div>
-              <div class="panel-title">Flight Number History Log</div>
-              <ul class="history-list" id="ui-history-log">
-                <!-- Log injected by JS -->
-              </ul>
-            </div>
+          </div>
+          <div class="panel details-panel-25">
+            <div class="panel-title">Flight Number History Log</div>
+            <ul class="history-list" id="ui-history-log">
+              <!-- Log injected by JS -->
+            </ul>
           </div>
         </div>
 
-        <div class="form-row">
-          <button class="secondary-btn" style="background: var(--success); color: var(--bg-base);">💳 BOOK NOW</button>
-          <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
-            <button class="secondary-btn">🌐 GOOGLE FLIGHTS</button>
-            <div style="font-size: 10px; color: var(--text-muted); text-align: center;">Open live search in Google Flights (Zero API Cost)</div>
-          </div>
+        <div class="action-btn-row">
+          <button class="secondary-btn" id="ui-btn-book" style="background: var(--success); color: var(--bg-base);">💳 BOOK NOW</button>
+          <button class="secondary-btn" id="ui-btn-google-flights">🌐 GOOGLE FLIGHTS</button>
+          <button class="secondary-btn" id="ui-btn-export-csv">📥 EXPORT CSV</button>
+          <button class="secondary-btn" id="ui-btn-untrack" style="color: var(--danger); border-color: var(--danger);" onclick="UIEngine.openModal('modal-confirm-untrack')">🗑️ UNTRACK</button>
         </div>
-        <div class="form-row">
-          <button class="secondary-btn">📥 EXPORT CSV</button>
-          <button class="secondary-btn" style="color: var(--danger); border-color: var(--danger);" onclick="UIEngine.openModal('modal-confirm-untrack')">🗑️ UNTRACK</button>
-        </div>
+
       </div>
 
     </div>
@@ -414,20 +469,20 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">🎨 SELECT THEME</span>
-      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px;" onclick="UIEngine.closeModal('modal-theme')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button class="primary-btn" onclick="ThemeEngine.setTheme('random')">🎲 Random</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('cozy-village')">🌿 Cozy Village</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('cyberpunk')">⚡ Cyberpunk</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('gothic-crimson')">🍷 Gothic Crimson</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('minimalist-light')">⚪ Minimalist Light</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('modern-dark')">🌑 Modern Dark</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('modern-light')">☀️ Modern Light</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('retro-arcade')">🕹️ Retro Arcade</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('synthwave-sunset')">🌆 Synthwave Sunset</button>
-        <button class="secondary-btn" onclick="ThemeEngine.setTheme('wasteland-terminal')">📟 Wasteland Terminal</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" id="theme-grid">
+        <button class="primary-btn" data-theme-id="random" onclick="ThemeEngine.setTheme('random')">🎲 Random</button>
+        <button class="secondary-btn" data-theme-id="cozy-village" onclick="ThemeEngine.setTheme('cozy-village')">🌿 Cozy Village</button>
+        <button class="secondary-btn" data-theme-id="cyberpunk" onclick="ThemeEngine.setTheme('cyberpunk')">⚡ Cyberpunk</button>
+        <button class="secondary-btn" data-theme-id="gothic-crimson" onclick="ThemeEngine.setTheme('gothic-crimson')">🍷 Gothic Crimson</button>
+        <button class="secondary-btn" data-theme-id="minimalist-light" onclick="ThemeEngine.setTheme('minimalist-light')">⚪ Minimalist Light</button>
+        <button class="secondary-btn" data-theme-id="modern-dark" onclick="ThemeEngine.setTheme('modern-dark')">🌑 Modern Dark</button>
+        <button class="secondary-btn" data-theme-id="modern-light" onclick="ThemeEngine.setTheme('modern-light')">☀️ Modern Light</button>
+        <button class="secondary-btn" data-theme-id="retro-arcade" onclick="ThemeEngine.setTheme('retro-arcade')">🕹️ Retro Arcade</button>
+        <button class="secondary-btn" data-theme-id="synthwave-sunset" onclick="ThemeEngine.setTheme('synthwave-sunset')">🌆 Synthwave Sunset</button>
+        <button class="secondary-btn" data-theme-id="wasteland-terminal" onclick="ThemeEngine.setTheme('wasteland-terminal')">📟 Wasteland Terminal</button>
       </div>
     </div>
   </div>
@@ -438,7 +493,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">✈️ ADD FLIGHT 🚀</span>
-      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-add-flight')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-add-flight')">✕</button>
     </div>
     <div class="modal-body">
       
@@ -458,36 +513,38 @@ input[type="date"] { color-scheme: dark light; }
       </div>
 
       <!-- Row 3 -->
-      <div class="form-row" style="margin-bottom: 12px;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-row">
+        <div class="form-group">
           <label>TRIP TYPE</label>
-          <div class="select-wrapper">
-            <select class="form-control" id="input-trip-type" onchange="ApplicationLogic.toggleReturnDate()">
-              <option value="round-trip">Round-Trip</option>
-              <option value="one-way">One-Way</option>
-            </select>
+          <div class="custom-select" id="cs-trip-type" data-value="round-trip">
+            <div class="custom-select-trigger"><span class="c-text">Round-Trip</span> <span class="c-arrow">▼</span></div>
+            <div class="custom-select-options">
+              <div class="custom-option selected" data-value="round-trip">Round-Trip</div>
+              <div class="custom-option" data-value="one-way">One-Way</div>
+            </div>
           </div>
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label>JUNK FARE FILTER</label>
-          <div class="select-wrapper">
-            <select class="form-control" id="input-stop-filter">
-              <option value="nonstop">Nonstop Only</option>
-              <option value="1stop">Max 1 Stop</option>
-              <option value="any">Any Stops</option>
-            </select>
+          <div class="custom-select" id="cs-stop-filter" data-value="nonstop">
+            <div class="custom-select-trigger"><span class="c-text">Nonstop Only</span> <span class="c-arrow">▼</span></div>
+            <div class="custom-select-options">
+              <div class="custom-option selected" data-value="nonstop">Nonstop Only</div>
+              <div class="custom-option" data-value="1stop">Max 1 Stop</div>
+              <div class="custom-option" data-value="any">Any Stops</div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Row 4 -->
-      <div class="form-row" style="margin-bottom: 12px;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-row">
+        <div class="form-group">
           <label>ORIGIN (IATA)</label>
           <input type="text" class="form-control iata-input" id="input-origin-iata" maxlength="60" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-origin-iata"></div>
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label>DESTINATION (IATA)</label>
           <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="60" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-dest-iata"></div>
@@ -495,32 +552,33 @@ input[type="date"] { color-scheme: dark light; }
       </div>
 
       <!-- Row 5 -->
-      <div class="form-row" style="margin-bottom: 12px;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-row">
+        <div class="form-group">
           <label>DEPARTURE DATE</label>
           <input type="date" class="form-control" id="input-departure-date">
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label>RETURN DATE</label>
           <input type="date" class="form-control" id="input-return-date">
         </div>
       </div>
 
       <!-- Row 6 -->
-      <div class="form-row" style="margin-bottom: 12px;">
-        <div class="form-group" style="margin-bottom: 0;">
+      <div class="form-row">
+        <div class="form-group">
           <label>PASSENGERS (1-10)</label>
           <input type="number" class="form-control" id="input-passenger-count" min="1" max="10" value="1">
         </div>
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group">
           <label>CABIN CLASS</label>
-          <div class="select-wrapper">
-            <select class="form-control" id="input-cabin-class">
-              <option value="economy">Economy</option>
-              <option value="premium">Premium Economy</option>
-              <option value="business">Business</option>
-              <option value="first">First</option>
-            </select>
+          <div class="custom-select" id="cs-cabin-class" data-value="economy">
+            <div class="custom-select-trigger"><span class="c-text">Economy</span> <span class="c-arrow">▼</span></div>
+            <div class="custom-select-options">
+              <div class="custom-option selected" data-value="economy">Economy</div>
+              <div class="custom-option" data-value="premium">Premium Economy</div>
+              <div class="custom-option" data-value="business">Business</div>
+              <div class="custom-option" data-value="first">First</div>
+            </div>
           </div>
         </div>
       </div>
@@ -528,45 +586,21 @@ input[type="date"] { color-scheme: dark light; }
       <!-- Row 7 -->
       <div class="form-group">
         <label>GENESIS SWEEP HORIZON (Days to model): <span id="ui-slider-val" style="color: var(--accent); font-weight: bold;">14</span></label>
-        <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="14" style="width: 100%; margin-top: 5px;" oninput="document.getElementById('ui-slider-val').innerText = this.value">
+        <input type="range" id="input-genesis-sweep-horizon-days" min="5" max="30" value="14" style="width: 100%; margin-top: 5px;">
       </div>
 
       <!-- Row 8 -->
       <div class="form-group">
         <label>TARGET AIRLINES (Multi-Select)</label>
-        <div class="form-row" style="align-items: center; margin-bottom: 0;">
-          <div class="select-wrapper" style="flex: 0 0 160px; max-width: 160px;">
-            <select class="form-control" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)">
-              <option value="" disabled selected hidden id="ui-opt-add-carrier">+ Add Carrier...</option>
-              <optgroup label="North America">
-                <option value="AC">Air Canada (AC)</option>
-                <option value="AS">Alaska Airlines (AS)</option>
-                <option value="AA">American Airlines (AA)</option>
-                <option value="DL">Delta Air Lines (DL)</option>
-                <option value="B6">JetBlue Airways (B6)</option>
-                <option value="WN">Southwest Airlines (WN)</option>
-                <option value="UA">United Airlines (UA)</option>
-                <option value="WS">WestJet (WS)</option>
-              </optgroup>
-              <optgroup label="Asia">
-                <option value="NH">All Nippon Airways (NH)</option>
-                <option value="OZ">Asiana Airlines (OZ)</option>
-                <option value="CX">Cathay Pacific (CX)</option>
-                <option value="CI">China Airlines (CI)</option>
-                <option value="BR">EVA Air (BR)</option>
-                <option value="JL">Japan Airlines (JL)</option>
-                <option value="KE">Korean Air (KE)</option>
-                <option value="SQ">Singapore Airlines (SQ)</option>
-              </optgroup>
-              <optgroup label="Europe">
-                <option value="AF">Air France (AF)</option>
-                <option value="BA">British Airways (BA)</option>
-                <option value="LH">Lufthansa (LH)</option>
-              </optgroup>
-            </select>
+        <div class="form-row" style="align-items: center;">
+          <div class="custom-select" id="cs-add-airline" data-value="" style="flex: 0 0 160px; max-width: 160px;">
+            <div class="custom-select-trigger"><span class="c-text" id="ui-opt-add-carrier">+ Add Carrier...</span> <span class="c-arrow">▼</span></div>
+            <div class="custom-select-options" id="cs-options-airline">
+              <!-- Populated by JS -->
+            </div>
           </div>
-          <div class="pill-container" id="container-airline-tags" style="flex: 1; border: none; background: transparent; padding: 0;">
-            <!-- Start empty per DIFF-50 -->
+          <div class="pill-container" id="container-airline-tags" style="flex: 1; border: none; background: transparent; padding: 0; min-height: 0;">
+            <!-- Empty -->
           </div>
         </div>
       </div>
@@ -584,7 +618,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content">
     <div class="modal-header" style="justify-content: center; position: relative;">
       <span style="flex:1; text-align:center;">⚙️ SETTINGS</span>
-      <button class="secondary-btn" style="position:absolute; right:15px; padding:6px 12px;" onclick="UIEngine.closeModal('modal-settings')">✕</button>
+      <button class="secondary-btn" style="position:absolute; right:15px; width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-settings')">✕</button>
     </div>
     <div class="modal-body">
       
@@ -605,7 +639,7 @@ input[type="date"] { color-scheme: dark light; }
         <label>FAIL-SAFE HARD LOCK</label>
         <div style="padding-left: 14px; margin-top: 8px;">
           <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-main); text-transform:none;">
-            <input type="checkbox" checked> Enable Fetch Shield
+            <input type="checkbox" checked id="input-lock-threshold-toggle"> Enable Fetch Shield
           </label>
           <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Safety tripwire: Automatically halts scheduled fetches when the threshold is hit.</div>
           <div class="form-row" style="margin-top: 12px; align-items: center;">
@@ -629,7 +663,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content" style="max-width: 480px;">
     <div class="modal-header">
       <span>⚠️ MANUAL HORIZON TRUE-UP</span>
-      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-true-up')">✕</button>
+      <button class="secondary-btn" style="width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-true-up')">✕</button>
     </div>
     <div class="modal-body">
       <p style="font-size: 14px; line-height: 1.5;">Executing this manual sweep will overwrite the current elastically interpolated data with live Ignav API pricing.</p>
@@ -654,7 +688,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content" style="max-width: 400px;">
     <div class="modal-header">
       <span>📊 OVERRIDE FETCH COUNT</span>
-      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-fetch-override')">✕</button>
+      <button class="secondary-btn" style="width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-fetch-override')">✕</button>
     </div>
     <div class="modal-body" style="align-items: center; gap: 20px;">
       <label style="font-size: 13px; color: var(--text-muted);">Enter verified billing cycle usage:</label>
@@ -672,7 +706,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content" style="max-width: 400px; border-color: var(--danger);">
     <div class="modal-header" style="color: var(--danger);">
       <span>⚠️ CONFIRM UNTRACK</span>
-      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-confirm-untrack')">✕</button>
+      <button class="secondary-btn" style="width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-confirm-untrack')">✕</button>
     </div>
     <div class="modal-body">
       <p style="font-size: 14px; line-height: 1.5;">Are you sure you want to untrack this route? All historical pricing data, trajectory records, and linked Firestore documents will be permanently purged.</p>
@@ -690,7 +724,7 @@ input[type="date"] { color-scheme: dark light; }
   <div class="modal-content" style="max-width: 400px; border-color: var(--warning);">
     <div class="modal-header" style="color: var(--warning);">
       <span>⚠️ INVALID ITINERARY</span>
-      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-validation-error')">✕</button>
+      <button class="secondary-btn" style="width: 32px; height: 32px; padding: 0; display:flex; align-items:center; justify-content:center;" onclick="UIEngine.closeModal('modal-validation-error')">✕</button>
     </div>
     <div class="modal-body" style="font-size: 13px; line-height: 1.6;">
       Please correct the following errors before tracking:
@@ -724,12 +758,20 @@ const ThemeEngine = {
       const keys = this.getThemeKeys();
       resolvedTheme = keys[Math.floor(Math.random() * keys.length)];
     }
-    requestAnimationFrame(() => { document.body.setAttribute('data-theme', resolvedTheme); });
+    requestAnimationFrame(() => { 
+      document.body.setAttribute('data-theme', resolvedTheme); 
+      this.updateHighlighter(resolvedTheme);
+    });
     return resolvedTheme;
   },
   setTheme(themeKey) {
     localStorage.setItem('app_theme', themeKey);
     this.applyTheme(themeKey);
+  },
+  updateHighlighter(activeTheme) {
+    document.querySelectorAll('#theme-grid button').forEach(btn => btn.classList.remove('theme-active'));
+    const target = document.querySelector(`#theme-grid button[data-theme-id="${activeTheme}"]`);
+    if(target) target.classList.add('theme-active');
   },
   init() { this.applyTheme(this.getActiveTheme()); }
 };
@@ -742,7 +784,7 @@ const FirebaseEngine = {
       if (typeof firebase !== 'undefined') {
         this.app = firebase.initializeApp(window.CONFIG.FIREBASE);
         this.db = firebase.firestore();
-        console.log("Firebase initialized. Awaiting live listeners (v0.5).");
+        console.log("Firebase initialized. Awaiting live listeners (v0.6).");
       }
     } catch(e) { console.warn("Firebase offline. Utilizing local state.", e); }
   }
@@ -756,13 +798,114 @@ const AIRPORT_DICTIONARY = [
   { iata: "NRT", city: "Tokyo", name: "Narita" }, { iata: "LHR", city: "London", name: "Heathrow" },
   { iata: "CDG", city: "Paris", name: "Charles de Gaulle" }, { iata: "YYZ", city: "Toronto", name: "Pearson Int." },
   { iata: "YVR", city: "Vancouver", name: "Vancouver Int." }, { iata: "YUL", city: "Montreal", name: "Trudeau" },
-  { iata: "YYC", city: "Calgary", name: "Calgary Int." }, { iata: "YOW", city: "Ottawa", name: "Macdonald-Cartier" }
+  { iata: "YYC", city: "Calgary", name: "Calgary Int." }, { iata: "YOW", city: "Ottawa", name: "Macdonald-Cartier" },
+  { iata: "MCO", city: "Orlando", name: "Orlando Int." }, { iata: "SLC", city: "Salt Lake City", name: "Salt Lake City Int." }
 ];
 
-/* --- UI MANIPULATION --- */
+const AIRLINE_GROUPS = {
+  "North America": [
+    { code: "AC", name: "Air Canada (AC)" }, { code: "AS", name: "Alaska Airlines (AS)" },
+    { code: "AA", name: "American Airlines (AA)" }, { code: "DL", name: "Delta Air Lines (DL)" },
+    { code: "B6", name: "JetBlue Airways (B6)" }, { code: "WN", name: "Southwest Airlines (WN)" },
+    { code: "UA", name: "United Airlines (UA)" }, { code: "WS", name: "WestJet (WS)" }
+  ],
+  "Asia": [
+    { code: "NH", name: "All Nippon Airways (NH)" }, { code: "OZ", name: "Asiana Airlines (OZ)" },
+    { code: "CX", name: "Cathay Pacific (CX)" }, { code: "CI", name: "China Airlines (CI)" },
+    { code: "BR", name: "EVA Air (BR)" }, { code: "JL", name: "Japan Airlines (JL)" },
+    { code: "KE", name: "Korean Air (KE)" }, { code: "SQ", name: "Singapore Airlines (SQ)" }
+  ],
+  "Europe": [
+    { code: "AF", name: "Air France (AF)" }, { code: "BA", name: "British Airways (BA)" },
+    { code: "LH", name: "Lufthansa (LH)" }
+  ]
+};
+
+/* --- CUSTOM SELECT ENGINE (FEAT-16) --- */
+const CustomSelectEngine = {
+  init() {
+    document.addEventListener('click', (e) => {
+      if(!e.target.closest('.custom-select')) {
+        document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
+      }
+    });
+    this.bindAll();
+  },
+  bindAll() {
+    document.querySelectorAll('.custom-select').forEach(select => {
+      const trigger = select.querySelector('.custom-select-trigger');
+      trigger.onclick = (e) => {
+        const isOpen = select.classList.contains('open');
+        document.querySelectorAll('.custom-select').forEach(el => el.classList.remove('open'));
+        if(!isOpen) select.classList.add('open');
+      };
+      this.bindOptions(select);
+    });
+  },
+  bindOptions(select) {
+    const options = select.querySelectorAll('.custom-option');
+    options.forEach(opt => {
+      opt.onclick = (e) => {
+        if(opt.classList.contains('disabled')) return;
+        const val = opt.getAttribute('data-value');
+        const text = opt.innerText;
+        select.setAttribute('data-value', val);
+        select.querySelector('.c-text').innerText = text;
+        options.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        select.classList.remove('open');
+
+        // Logic routing
+        if(select.id === 'cs-trip-type') ApplicationLogic.toggleReturnDate();
+        if(select.id === 'cs-add-airline') ApplicationLogic.addAirlinePill(val, text);
+        if(select.id === 'cs-chart-format') {
+          if(ApplicationLogic.currentlySelectedRouteId) {
+            const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === ApplicationLogic.currentlySelectedRouteId);
+            ApplicationLogic.updateOracleUI(route);
+          }
+        }
+        if(select.id === 'cs-active-monitor') {
+          ApplicationLogic.currentlySelectedRouteId = val;
+          const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === val);
+          if(route) ApplicationLogic.updateOracleUI(route);
+        }
+      };
+    });
+  },
+  getValue(id) {
+    return document.getElementById(id).getAttribute('data-value');
+  },
+  setValue(id, val, triggerText) {
+    const select = document.getElementById(id);
+    if(!select) return;
+    select.setAttribute('data-value', val);
+    const options = select.querySelectorAll('.custom-option');
+    let found = false;
+    options.forEach(o => {
+      if(o.getAttribute('data-value') === val) {
+        o.classList.add('selected');
+        if(!triggerText) select.querySelector('.c-text').innerText = o.innerText;
+        found = true;
+      } else {
+        o.classList.remove('selected');
+      }
+    });
+    if(triggerText && !found) select.querySelector('.c-text').innerText = triggerText;
+  }
+};
+
+/* --- UI MANIPULATION & TOAST ENGINE --- */
 const UIEngine = {
   openModal(id) { document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open'); },
-  closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open'); }
+  closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open'); },
+  showToast(message) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'theme-toast';
+    toast.innerText = message;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
 };
 
 /* --- CORE APPLICATION LOGIC & ORACLE ENGINE --- */
@@ -770,16 +913,20 @@ const ApplicationLogic = {
   activeMonitoredRoutesList: [],
   currentlySelectedRouteId: null,
   monthlyApiFetchCounter: 412,
+  isShieldEnabled: true,
 
   init() {
     this.hydrateConfigStrings();
+    this.populateAirlineDropdown();
     this.calculateDynamicQuota();
     this.setupDateLocks();
     this.setupIataAutocomplete();
     this.setupCurrencyBinding();
+    this.setupShieldToggle();
+    CustomSelectEngine.init();
     this.renderDashboardState();
     
-    // Fallback static UI hydration guards
+    // Fallback static UI hydration guards (in HTML but re-injected if empty)
     const btnSettings = document.getElementById('ui-btn-settings');
     if (btnSettings && !btnSettings.innerHTML.trim()) btnSettings.innerHTML = "⚙️";
     const btnTheme = document.getElementById('ui-btn-theme');
@@ -800,13 +947,49 @@ const ApplicationLogic = {
     
     document.getElementById('input-lock-threshold').value = window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS;
     
+    // Decoupled Header Icons & Tooltips
+    const btnSet = document.getElementById('ui-btn-settings');
+    btnSet.innerText = window.CONFIG.EMOJI_BTN_SETTINGS;
+    btnSet.title = window.CONFIG.TOOLTIP_BTN_SETTINGS;
+    
+    const btnThm = document.getElementById('ui-btn-theme');
+    btnThm.innerText = window.CONFIG.EMOJI_BTN_THEME;
+    btnThm.title = window.CONFIG.TOOLTIP_BTN_THEME;
+    
+    const btnShf = document.getElementById('ui-btn-shuffle');
+    btnShf.innerText = window.CONFIG.EMOJI_BTN_SHUFFLE_QA;
+    btnShf.title = window.CONFIG.TOOLTIP_BTN_SHUFFLE_QA;
+    if(window.CONFIG.ENABLE_DEV_DATA_SHUFFLE) {
+      btnShf.style.display = "flex";
+    }
+
+    // Action buttons & Modals
     document.getElementById('ui-btn-add-flight-main').innerText = window.CONFIG.BTN_ADD_FLIGHT_MAIN;
     document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT_EMPTY;
     document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
+    document.getElementById('ui-btn-book').innerText = window.CONFIG.BTN_BOOK_NOW;
+    document.getElementById('ui-btn-google-flights').innerText = window.CONFIG.BTN_GOOGLE_FLIGHTS;
+    document.getElementById('ui-btn-export-csv').innerText = window.CONFIG.BTN_EXPORT_CSV;
+    document.getElementById('ui-btn-untrack').innerText = window.CONFIG.BTN_UNTRACK;
+  },
 
-    if(window.CONFIG.ENABLE_DEV_DATA_SHUFFLE) {
-      document.getElementById('ui-btn-shuffle').style.display = "flex";
-    }
+  populateAirlineDropdown() {
+    const container = document.getElementById('cs-options-airline');
+    container.innerHTML = '';
+    Object.keys(AIRLINE_GROUPS).forEach(region => {
+      const optgroup = document.createElement('div');
+      optgroup.className = 'custom-optgroup';
+      optgroup.innerText = region;
+      container.appendChild(optgroup);
+      
+      AIRLINE_GROUPS[region].forEach(air => {
+        const opt = document.createElement('div');
+        opt.className = 'custom-option';
+        opt.setAttribute('data-value', air.code);
+        opt.innerText = air.name;
+        container.appendChild(opt);
+      });
+    });
   },
 
   calculateDynamicQuota() {
@@ -826,10 +1009,18 @@ const ApplicationLogic = {
     }
   },
 
+  setupShieldToggle() {
+    document.getElementById('input-lock-threshold-toggle').addEventListener('change', (e) => {
+      this.isShieldEnabled = e.target.checked;
+      this.updateTelemetryTray();
+    });
+  },
+
   saveSettings() {
     window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS = parseInt(document.getElementById('input-lock-threshold').value);
     this.updateTelemetryTray();
     UIEngine.closeModal('modal-settings');
+    UIEngine.showToast(window.CONFIG.TOAST_SETTINGS_SAVED);
   },
 
   updateTelemetryTray() {
@@ -843,7 +1034,13 @@ const ApplicationLogic = {
     const settingsShield = document.getElementById('ui-settings-shield-status');
     const rem = max - this.monthlyApiFetchCounter;
 
-    if (this.monthlyApiFetchCounter >= window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS) {
+    if (!this.isShieldEnabled) {
+      gateSub.innerText = `SHIELDS DOWN`;
+      gateSub.style.color = "var(--danger)";
+      gateIcon.innerText = "🔴";
+      settingsShield.innerText = `🔴 SHIELDS DOWN (Shield Disabled)`;
+      settingsShield.style.color = "var(--danger)";
+    } else if (this.monthlyApiFetchCounter >= window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS) {
       gateSub.innerText = `SHIELDS BLOCKING`;
       gateSub.style.color = "var(--danger)";
       gateIcon.innerText = "🔴";
@@ -870,14 +1067,35 @@ const ApplicationLogic = {
     const retInput = document.getElementById('input-return-date');
     
     depInput.min = today;
+    
+    const updateHorizon = () => {
+      if(depInput.value && retInput.value) {
+        const d1 = new Date(depInput.value);
+        const d2 = new Date(retInput.value);
+        let diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+        if(diffDays > 0) {
+          diffDays = Math.max(5, Math.min(diffDays, 30));
+          const range = document.getElementById('input-genesis-sweep-horizon-days');
+          range.value = diffDays;
+          range.max = Math.max(30, diffDays); // Ensure slider can handle it
+          document.getElementById('ui-slider-val').innerText = diffDays;
+        }
+      }
+    };
+
     depInput.addEventListener('change', (e) => {
       retInput.min = e.target.value; 
       if(retInput.value && retInput.value < e.target.value) retInput.value = e.target.value;
+      updateHorizon();
+    });
+    retInput.addEventListener('change', updateHorizon);
+    document.getElementById('input-genesis-sweep-horizon-days').addEventListener('input', (e) => {
+      document.getElementById('ui-slider-val').innerText = e.target.value;
     });
   },
 
   toggleReturnDate() {
-    const isOneWay = document.getElementById('input-trip-type').value === 'one-way';
+    const isOneWay = CustomSelectEngine.getValue('cs-trip-type') === 'one-way';
     const retInput = document.getElementById('input-return-date');
     retInput.disabled = isOneWay;
     if(isOneWay) retInput.value = "";
@@ -927,34 +1145,32 @@ const ApplicationLogic = {
   },
 
   openAddFlightModal() {
-    // Diff-51: Clean slate reset
+    // Reset Form
     document.getElementById('input-trip-tag').value = "";
     document.querySelector('input[name="input-currency-selection"][value="USD"]').checked = true;
     document.getElementById('input-origin-iata').value = "SFO - San Francisco (SFO Int.)";
     document.getElementById('input-dest-iata').value = "";
     document.getElementById('input-departure-date').value = "";
     document.getElementById('input-return-date').value = "";
-    document.getElementById('input-trip-type').value = "round-trip";
-    document.getElementById('input-stop-filter').value = "nonstop";
     document.getElementById('input-passenger-count').value = "1";
-    document.getElementById('input-cabin-class').value = window.CONFIG.DEFAULT_CABIN_CLASS;
     document.getElementById('input-genesis-sweep-horizon-days').value = "14";
     document.getElementById('ui-slider-val').innerText = "14";
     
+    CustomSelectEngine.setValue('cs-trip-type', 'round-trip');
+    CustomSelectEngine.setValue('cs-stop-filter', 'nonstop');
+    CustomSelectEngine.setValue('cs-cabin-class', window.CONFIG.DEFAULT_CABIN_CLASS);
+    CustomSelectEngine.setValue('cs-add-airline', '', window.CONFIG.PLACEHOLDER_ADD_CARRIER);
+    
     // Restore all dropdown options and clear pills
     document.getElementById('container-airline-tags').innerHTML = "";
-    document.querySelectorAll('#input-add-airline option').forEach(opt => {
-      if(opt.value !== "") { opt.disabled = false; opt.hidden = false; }
-    });
-    document.getElementById('input-add-airline').value = "";
+    document.querySelectorAll('#cs-options-airline .custom-option').forEach(opt => opt.classList.remove('disabled'));
     
     this.toggleReturnDate();
     UIEngine.openModal('modal-add-flight');
   },
 
-  addAirlinePill(selectElement) {
-    if(!selectElement.value) return;
-    const code = selectElement.value;
+  addAirlinePill(code, text) {
+    if(!code) return;
     const container = document.getElementById('container-airline-tags');
     
     const div = document.createElement('div');
@@ -963,21 +1179,17 @@ const ApplicationLogic = {
     div.innerHTML = `${code} <span onclick="ApplicationLogic.removeAirlinePill('${code}', this.parentElement)">✕</span>`;
     container.appendChild(div);
     
-    // Hide and disable to prevent duplicates
-    const option = selectElement.options[selectElement.selectedIndex];
-    option.disabled = true;
-    option.hidden = true;
-    selectElement.value = "";
+    // Hide and disable option
+    const option = document.querySelector(`#cs-options-airline .custom-option[data-value="${code}"]`);
+    if(option) option.classList.add('disabled');
+    
+    CustomSelectEngine.setValue('cs-add-airline', '', window.CONFIG.PLACEHOLDER_ADD_CARRIER);
   },
 
   removeAirlinePill(code, element) {
     element.remove();
-    // Restore into region grouping
-    const option = document.querySelector(`#input-add-airline option[value="${code}"]`);
-    if(option) {
-      option.disabled = false;
-      option.hidden = false;
-    }
+    const option = document.querySelector(`#cs-options-airline .custom-option[data-value="${code}"]`);
+    if(option) option.classList.remove('disabled');
   },
 
   renderDashboardState() {
@@ -985,30 +1197,35 @@ const ApplicationLogic = {
     const activeCanvas = document.getElementById('active-dashboard-canvas');
     const oraclePanel = document.getElementById('panel-oracle');
     const fetchBtn = document.getElementById('btn-manual-fetch');
-    const routeSelect = document.getElementById('select-active-monitored-route');
-
+    
     document.getElementById('ui-monitor-count').innerText = this.activeMonitoredRoutesList.length;
+
+    const selectOptions = document.querySelector('#cs-active-monitor .custom-select-options');
+    selectOptions.innerHTML = `<div class="custom-option ${this.currentlySelectedRouteId ? '' : 'selected'}" data-value="none">-- Select Route --</div>`;
 
     if (this.activeMonitoredRoutesList.length === 0) {
       emptyCanvas.classList.remove('hidden');
       activeCanvas.classList.add('hidden');
       oraclePanel.style.display = "none";
       fetchBtn.disabled = true;
+      CustomSelectEngine.setValue('cs-active-monitor', 'none', '-- Select Route --');
     } else {
       emptyCanvas.classList.add('hidden');
       activeCanvas.classList.remove('hidden');
       oraclePanel.style.display = "flex";
       fetchBtn.disabled = false;
       
-      routeSelect.innerHTML = "";
       this.activeMonitoredRoutesList.forEach((r) => {
-        const opt = document.createElement('option');
-        opt.value = r.id;
-        opt.innerText = `🏷️ ${r.tag} (${r.origin} ➔ ${r.dest}) [${r.currency}]`;
-        routeSelect.appendChild(opt);
+        selectOptions.innerHTML += `<div class="custom-option ${this.currentlySelectedRouteId === r.id ? 'selected' : ''}" data-value="${r.id}">🏷️ ${r.tag} (${r.origin} ➔ ${r.dest}) [${r.currency}]</div>`;
       });
-      routeSelect.value = this.currentlySelectedRouteId;
+      
+      const activeRoute = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
+      if(activeRoute) {
+        CustomSelectEngine.setValue('cs-active-monitor', activeRoute.id, `🏷️ ${activeRoute.tag} (${activeRoute.origin} ➔ ${activeRoute.dest}) [${activeRoute.currency}]`);
+      }
     }
+    // Rebind options for this select
+    CustomSelectEngine.bindOptions(document.getElementById('cs-active-monitor'));
   },
 
   initializeNewRoute() {
@@ -1029,6 +1246,16 @@ const ApplicationLogic = {
 
     const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'});
     
+    // Gen Mock Data Curve
+    let dataVals = [];
+    const baseCurrent = Math.floor(Math.random() * 200) + 300;
+    for(let i=0; i<horizon; i++) {
+       const flux = Math.sin(i) * 15 + (Math.random()*20 - 10);
+       dataVals.push(baseCurrent + flux);
+    }
+    dataVals[0] = baseCurrent;
+    dataVals[horizon-1] = baseCurrent + 45; 
+
     const routeObj = {
       id: "rt_" + Date.now(),
       tag: tag,
@@ -1036,10 +1263,8 @@ const ApplicationLogic = {
       dest: dest,
       currency: currency,
       horizon: horizon,
-      currentPrice: Math.floor(Math.random() * 200) + 300, 
-      avgPrice: 420,
-      lowBound: 310,
-      hiBound: 580,
+      currentPrice: baseCurrent,
+      dataPoints: dataVals,
       historyLog: [`${todayStr} : DL 412 (Genesis)`]
     };
 
@@ -1049,75 +1274,132 @@ const ApplicationLogic = {
     this.updateOracleUI(routeObj);
     UIEngine.closeModal('modal-add-flight');
     this.renderDashboardState();
+    
+    // Toast
+    UIEngine.showToast(`${window.CONFIG.TOAST_FLIGHT_ADDED} (${origin} ➔ ${dest})`);
   },
 
   updateOracleUI(route) {
+    const maxVal = Math.max(...route.dataPoints);
+    const minVal = Math.min(...route.dataPoints);
+    const cHigh = Math.ceil(maxVal * 1.10);
+    const cLow = Math.floor(minVal * 0.90);
+    const cMid = Math.round((cHigh + cLow) / 2);
+    const cRange = cHigh - cLow;
+    
+    const drop = Math.round(((cMid - route.currentPrice) / cMid) * 100);
     const badge = document.getElementById('badge-oracle-recommendation-status');
-    if (route.currentPrice < route.avgPrice) {
-      const drop = Math.round(((route.avgPrice - route.currentPrice) / route.avgPrice) * 100);
+    if (route.currentPrice < cMid) {
       badge.className = "status-badge status-buy";
-      badge.innerText = `📉 BUY NOW: -${drop}% vs 30D BASELINE`;
+      badge.innerText = `📉 BUY NOW: -${drop}% vs ${route.horizon} DAY BASELINE`;
     } else {
       badge.className = "status-badge status-hold";
       badge.innerText = `🟡 HOLD: PRICES ELEVATED`;
     }
 
     // Dual Anchors
-    document.getElementById('ui-anchor-outbound').innerText = "$" + route.currentPrice.toFixed(2);
-    document.getElementById('ui-anchor-return').innerText = "$" + (route.currentPrice + 45).toFixed(2);
+    document.getElementById('ui-anchor-outbound').innerText = "$" + route.dataPoints[0].toFixed(2);
+    document.getElementById('ui-anchor-return').innerText = "$" + route.dataPoints[route.horizon-1].toFixed(2);
     
     document.querySelectorAll('.ui-currency-label').forEach(el => el.innerText = route.currency);
     
     document.getElementById('ui-gauge-horizon').innerText = route.horizon;
     document.getElementById('ui-chart-horizon-label').innerText = route.horizon;
 
-    const range = route.hiBound - route.lowBound;
-    let percent = ((route.currentPrice - route.lowBound) / range) * 100;
+    let percent = ((route.currentPrice - cLow) / cRange) * 100;
     if(percent < 5) percent = 5; if(percent > 95) percent = 95;
     
     document.getElementById('ui-gauge-needle').style.left = `${percent}%`;
-    document.getElementById('ui-gauge-low-bounds').innerText = `$${route.lowBound}`;
-    document.getElementById('ui-gauge-hi-bounds').innerText = `$${route.hiBound}`;
+    document.getElementById('ui-gauge-low-bounds').innerText = `$${cLow}`;
+    document.getElementById('ui-gauge-hi-bounds').innerText = `$${cHigh}`;
 
-    // Y-Axis
-    document.getElementById('ui-y-axis-high').innerText = `$${route.hiBound}`;
-    document.getElementById('ui-y-axis-mid').innerText = `$${route.avgPrice}`;
-    document.getElementById('ui-y-axis-low').innerText = `$${route.lowBound}`;
+    // Y-Axis Exact Calibration (DEF-09)
+    document.getElementById('ui-y-axis-high').innerText = `$${cHigh}`;
+    document.getElementById('ui-y-axis-mid').innerText = `$${cMid}`;
+    document.getElementById('ui-y-axis-low').innerText = `$${cLow}`;
 
-    // Chart Gen
+    // Chart Gen Engine (FEAT-15)
     const chart = document.getElementById('ui-mock-chart-container');
     chart.innerHTML = "";
     
     let baseDate = new Date();
+    const format = CustomSelectEngine.getValue('cs-chart-format') || 'bar';
     
-    for(let i=0; i < route.horizon; i++) {
-      const container = document.createElement('div');
-      container.className = "chart-bar-container";
+    if (format === 'bar') {
+      for(let i=0; i < route.horizon; i++) {
+        const container = document.createElement('div');
+        container.className = "chart-bar-container";
+        
+        const bar = document.createElement('div');
+        bar.className = (i === 0 || i === route.horizon - 1) ? "chart-bar anchor" : "chart-bar";
+        const heightBase = ((route.dataPoints[i] - cLow) / cRange) * 100;
+        bar.style.height = `${Math.max(2, Math.min(100, heightBase))}%`;
+        
+        container.appendChild(bar);
+        
+        if (i === 0 || i === Math.floor(route.horizon/2) || i === route.horizon - 1) {
+          const label = document.createElement('div');
+          label.className = "x-axis-label";
+          const d = new Date(baseDate); d.setDate(d.getDate() + i);
+          label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
+          container.appendChild(label);
+        }
+        chart.appendChild(container);
+      }
+    } else {
+      // Line Graph (SVG)
+      const svgLayer = document.createElement('div');
+      svgLayer.className = 'chart-svg-layer';
       
-      const bar = document.createElement('div');
-      bar.className = (i === 0 || i === route.horizon - 1) ? "chart-bar anchor" : "chart-bar";
-      const heightBase = (route.currentPrice / route.hiBound) * 100;
-      const flux = Math.sin(i) * 10;
-      bar.style.height = `${Math.max(10, Math.min(100, heightBase + flux))}%`;
+      const svgns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgns, "svg");
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+      svg.setAttribute("preserveAspectRatio", "none");
       
-      container.appendChild(bar);
-      
-      if (i === 0 || i === Math.floor(route.horizon/2) || i === route.horizon - 1) {
-        const label = document.createElement('div');
-        label.className = "x-axis-label";
-        const d = new Date(baseDate); d.setDate(d.getDate() + i);
-        label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
-        container.appendChild(label);
+      let pathD = "";
+      for(let i=0; i < route.horizon; i++) {
+        const px = (i / (route.horizon - 1)) * 100;
+        const py = 100 - (((route.dataPoints[i] - cLow) / cRange) * 100);
+        
+        // Node
+        const circle = document.createElementNS(svgns, "circle");
+        circle.setAttribute("cx", `${px}%`);
+        circle.setAttribute("cy", `${py}%`);
+        circle.setAttribute("r", "3");
+        circle.setAttribute("fill", (i===0 || i===route.horizon-1) ? "var(--success)" : "var(--accent)");
+        svg.appendChild(circle);
+        
+        pathD += `${i===0 ? 'M' : 'L'} ${px} ${py} `;
+        
+        // Labels
+        if (i === 0 || i === Math.floor(route.horizon/2) || i === route.horizon - 1) {
+          const container = document.createElement('div');
+          container.className = "chart-bar-container";
+          container.style.position = "absolute";
+          container.style.left = `${px}%`;
+          container.style.bottom = "0";
+          container.style.width = "0";
+          
+          const label = document.createElement('div');
+          label.className = "x-axis-label";
+          const d = new Date(baseDate); d.setDate(d.getDate() + i);
+          label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
+          container.appendChild(label);
+          chart.appendChild(container);
+        }
       }
       
-      if (i === 0 || i === route.horizon - 1) {
-        const anchorLabel = document.createElement('div');
-        anchorLabel.className = "anchor-label";
-        anchorLabel.innerHTML = `${i === 0 ? "Outbound" : "Return"}<br>Anchor`;
-        container.appendChild(anchorLabel);
-      }
+      const path = document.createElementNS(svgns, "path");
+      path.setAttribute("d", pathD);
+      path.setAttribute("stroke", "var(--accent)");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("fill", "none");
+      path.setAttribute("vector-effect", "non-scaling-stroke");
+      svg.insertBefore(path, svg.firstChild);
       
-      chart.appendChild(container);
+      svgLayer.appendChild(svg);
+      chart.appendChild(svgLayer);
     }
 
     // History Log
@@ -1137,10 +1419,17 @@ const ApplicationLogic = {
     if(!this.currentlySelectedRouteId) return;
     const route = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
     if(route) {
-      route.currentPrice = Math.floor(Math.random() * 200) + 300;
-      route.lowBound = Math.floor(Math.random() * 50) + 250;
-      route.hiBound = route.lowBound + Math.floor(Math.random() * 300) + 150;
-      route.avgPrice = route.lowBound + Math.floor((route.hiBound - route.lowBound) / 2);
+      const baseCurrent = Math.floor(Math.random() * 200) + 300;
+      let dataVals = [];
+      for(let i=0; i<route.horizon; i++) {
+         const flux = Math.sin(i) * 15 + (Math.random()*20 - 10);
+         dataVals.push(baseCurrent + flux);
+      }
+      dataVals[0] = baseCurrent;
+      dataVals[route.horizon-1] = baseCurrent + 45; 
+      
+      route.currentPrice = baseCurrent;
+      route.dataPoints = dataVals;
       
       const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'});
       const airlines = ['DL', 'AC', 'UA', 'AA', 'JL'];
@@ -1177,12 +1466,6 @@ window.onload = () => {
   ThemeEngine.init();
   ApplicationLogic.init();
 };
-
-document.getElementById('select-active-monitored-route').addEventListener('change', (e) => {
-  ApplicationLogic.currentlySelectedRouteId = e.target.value;
-  const route = ApplicationLogic.activeMonitoredRoutesList.find(r => r.id === e.target.value);
-  if(route) ApplicationLogic.updateOracleUI(route);
-});
 </script>
 </body>
 </html>
