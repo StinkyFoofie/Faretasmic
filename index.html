@@ -10,7 +10,7 @@ window.CONFIG = {
      SECTION 1: APP IDENTITY (Alphabetical)
      ======================================================================== */
   APP_TITLE: "✨ Faretasmic!!!",
-  APP_VERSION: "v0.3",
+  APP_VERSION: "v0.4",
 
   /* ========================================================================
      SECTION 2: FIREBASE CONFIGURATION
@@ -112,9 +112,15 @@ button, input, select {
   border-radius: var(--radius); background: var(--bg-input); color: var(--text-main);
   touch-action: manipulation; 
 }
-select option { background: var(--bg-surface); color: var(--text-main); }
 button { cursor: pointer; transition: background-color 0.15s, border-color 0.15s; white-space: normal; }
 button:hover { border-color: var(--border-hover); background: var(--bg-surface-hover); }
+
+/* Select overrides to prevent OS native theme bleed */
+select, select optgroup, select option {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  color-scheme: dark light;
+}
 
 /* High Contrast Calendar Picker & Native color-scheme */
 input[type="date"] { color-scheme: dark light; }
@@ -143,7 +149,7 @@ input[type="date"] { color-scheme: dark light; }
 .header-actions { display: flex; gap: 8px; }
 
 /* High-Density 2-Row Telemetry */
-.telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 15px; }
+.telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 24px; }
 .telemetry-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .telemetry-indicator { font-size: 16px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .telemetry-text-group { display: flex; flex-direction: column; justify-content: center; line-height: 1.2; text-align: left; }
@@ -151,10 +157,10 @@ input[type="date"] { color-scheme: dark light; }
 .telemetry-sub { font-size: 10px; color: var(--text-muted); }
 
 @media (max-width: 880px) {
-  .telemetry-tray { flex-basis: 100%; order: 3; justify-content: space-between; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin-top: 5px; }
+  .telemetry-tray { flex-basis: 100%; order: 3; justify-content: space-between; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin-top: 5px; gap: 10px; }
 }
 @media (max-width: 480px) {
-  .telemetry-tray { flex-wrap: wrap; justify-content: flex-start; }
+  .telemetry-tray { flex-wrap: wrap; justify-content: flex-start; gap: 15px; }
 }
 
 .main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
@@ -168,6 +174,7 @@ input[type="date"] { color-scheme: dark light; }
 .secondary-btn { padding: 10px; font-size: 13px; font-weight: bold; }
 .btn-group-equal { display: flex; gap: 10px; width: 100%; }
 .btn-group-equal > button { flex: 1 1 0; min-height: 42px; height: 42px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
+.btn-icon { padding: 0; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
 .status-badge { display: inline-block; padding: 6px 10px; border-radius: var(--radius); background: var(--bg-badge); color: var(--text-badge); font-weight: bold; font-size: 14px; text-align: center; white-space: normal; word-wrap: break-word; }
 .status-buy { background: var(--success); color: var(--text-inverse); }
@@ -182,7 +189,7 @@ input[type="date"] { color-scheme: dark light; }
 .gauge-marker { position: absolute; top: -2px; width: 2px; height: 28px; background: var(--text-main); z-index: 2; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 .gauge-marker::after { content: "▲"; position: absolute; bottom: -14px; color: var(--text-main); font-size: 12px; }
 
-.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; }
+.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 25px; }
 .y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 50px; }
 .mock-chart { flex: 1; height: 160px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px 10px 28px 10px; gap: 4px; position: relative; }
 .chart-bar-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; }
@@ -191,11 +198,13 @@ input[type="date"] { color-scheme: dark light; }
 .x-axis-label { position: absolute; bottom: -24px; font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: center; line-height: 1.1; }
 .x-axis-label .date { display: block; font-weight: bold; color: var(--text-main); font-size: 10px; }
 
+/* External Anchor Legends */
+.anchor-label { position: absolute; bottom: -52px; font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; white-space: nowrap; }
+
 /* Itinerary Details & History Log */
 .details-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
 @media(min-width: 600px) { .details-grid { grid-template-columns: 1fr 1fr; } }
-.history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; }
-.history-list li { list-style-type: disc; margin-left: 15px; }
+.history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; list-style: none; }
 
 /* --- 5. MODALS & FORMS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
@@ -209,7 +218,7 @@ input[type="date"] { color-scheme: dark light; }
 #modal-theme .modal-content { width: 580px; max-width: 92vw; }
 #modal-theme .primary-btn, #modal-theme .secondary-btn { height: 52px; min-height: 52px; max-height: 52px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: normal; text-align: center; line-height: 1.2; }
 
-.form-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.form-group { display: flex; flex-direction: column; gap: 6px; position: relative; margin-bottom: 12px; }
 .form-group label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
 .form-control { padding: 10px; font-size: 14px; width: 100%; box-sizing: border-box; height: 38px; min-height: 38px; -webkit-appearance: none; appearance: none; }
 .form-row { display: flex; gap: 10px; align-items: flex-start; }
@@ -246,7 +255,7 @@ input[type="date"] { color-scheme: dark light; }
   <header class="header-tray">
     <div class="header-brand">
       <h2 id="ui-app-title">✨ Faretasmic!</h2>
-      <span id="ui-app-version" class="app-version">v0.3</span>
+      <span id="ui-app-version" class="app-version">v0.4</span>
     </div>
     
     <div class="telemetry-tray">
@@ -285,8 +294,9 @@ input[type="date"] { color-scheme: dark light; }
     </div>
 
     <div class="header-actions">
-      <button class="secondary-btn btn-theme" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')" title="Theme">🎨</button>
-      <button class="secondary-btn btn-settings" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-shuffle" onclick="ApplicationLogic.shuffleData()" title="Shuffle QA" style="display: none;">🎲</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-theme" onclick="UIEngine.openModal('modal-theme')" title="Theme">🎨</button>
+      <button class="secondary-btn btn-icon" id="ui-btn-settings" onclick="UIEngine.openModal('modal-settings')" title="Settings">⚙</button>
     </div>
   </header>
 
@@ -296,7 +306,7 @@ input[type="date"] { color-scheme: dark light; }
     <!-- Left Column: Controls & Oracle -->
     <div class="left-col" style="display: flex; flex-direction: column; gap: 15px;">
       
-      <div class="panel" style="margin-bottom: 12px;">
+      <div class="panel">
         <div class="panel-title">Active Monitors (<span id="ui-monitor-count">0</span> / <span id="ui-monitor-max">33</span>)</div>
         <div class="select-wrapper">
           <select class="form-control" id="select-active-monitored-route">
@@ -304,9 +314,8 @@ input[type="date"] { color-scheme: dark light; }
           </select>
         </div>
         <div class="form-row btn-group-equal" style="margin-top: 5px;">
-          <button class="primary-btn" id="ui-btn-add-flight-main" onclick="UIEngine.openModal('modal-add-flight')">Add Flight</button>
+          <button class="primary-btn" id="ui-btn-add-flight-main" onclick="ApplicationLogic.openAddFlightModal()">Add Flight</button>
           <button class="secondary-btn" onclick="UIEngine.openModal('modal-true-up')" id="btn-manual-fetch" disabled>⚡ Fetch</button>
-          <button class="secondary-btn" onclick="ApplicationLogic.shuffleData()" id="ui-btn-shuffle" style="display: none; background: var(--bg-surface-hover);">🎲 Shuffle QA</button>
         </div>
       </div>
 
@@ -339,13 +348,13 @@ input[type="date"] { color-scheme: dark light; }
       <div id="empty-state-canvas">
         <h1 id="ui-empty-title">🔭 No Flights Monitored</h1>
         <p id="ui-empty-subtitle">Configure a route to begin price surveillance.</p>
-        <button class="primary-btn" id="ui-btn-add-flight-empty" onclick="UIEngine.openModal('modal-add-flight')">Add Flight</button>
+        <button class="primary-btn" id="ui-btn-add-flight-empty" onclick="ApplicationLogic.openAddFlightModal()">Add Flight</button>
       </div>
 
       <!-- Active Dashboard (Hidden initially) -->
       <div id="active-dashboard-canvas" class="hidden" style="display: flex; flex-direction: column; gap: 15px;">
         
-        <div class="panel">
+        <div class="panel panel-chart">
           <div class="panel-title"><span id="ui-chart-horizon-label">14</span>-DAY PRICE TRAJECTORY</div>
           
           <div class="chart-wrapper">
@@ -359,11 +368,6 @@ input[type="date"] { color-scheme: dark light; }
               <!-- Bars injected by JS -->
             </div>
           </div>
-
-          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-            <span><strong style="color:var(--success);">■</strong> Outbound Anchor</span>
-            <span><strong style="color:var(--success);">■</strong> Return Anchor</span>
-          </div>
         </div>
 
         <div class="panel">
@@ -371,8 +375,8 @@ input[type="date"] { color-scheme: dark light; }
             <div>
               <div class="panel-title">Selected Itinerary Details</div>
               <div style="font-size: 13px; line-height: 1.6; margin-top: 5px;" id="ui-itinerary-details">
-                🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 ➔ 17:05<br>
-                🛬 Return: JL 001 (HND ➔ SFO) 14:15 ➔ 17:50
+                🛫 Outbound: DL 412 (SFO ➔ HND) 08:30 PDT ➔ 17:05 JST (+1)<br>
+                🛬 Return: JL 001 (HND ➔ SFO) 14:15 JST ➔ 17:50 PDT
               </div>
             </div>
             <div>
@@ -454,8 +458,8 @@ input[type="date"] { color-scheme: dark light; }
       </div>
 
       <!-- Row 3 -->
-      <div class="form-row">
-        <div class="form-group">
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>TRIP TYPE</label>
           <div class="select-wrapper">
             <select class="form-control" id="input-trip-type" onchange="ApplicationLogic.toggleReturnDate()">
@@ -464,7 +468,7 @@ input[type="date"] { color-scheme: dark light; }
             </select>
           </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>JUNK FARE FILTER</label>
           <div class="select-wrapper">
             <select class="form-control" id="input-stop-filter">
@@ -477,38 +481,38 @@ input[type="date"] { color-scheme: dark light; }
       </div>
 
       <!-- Row 4 -->
-      <div class="form-row">
-        <div class="form-group">
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>ORIGIN (IATA)</label>
-          <input type="text" class="form-control iata-input" id="input-origin-iata" maxlength="3" autocomplete="off">
+          <input type="text" class="form-control iata-input" id="input-origin-iata" maxlength="60" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-origin-iata"></div>
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>DESTINATION (IATA)</label>
-          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="3" autocomplete="off">
+          <input type="text" class="form-control iata-input" id="input-dest-iata" maxlength="60" autocomplete="off">
           <div class="autocomplete-dropdown" id="dropdown-dest-iata"></div>
         </div>
       </div>
 
       <!-- Row 5 -->
-      <div class="form-row">
-        <div class="form-group">
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>DEPARTURE DATE</label>
           <input type="date" class="form-control" id="input-departure-date">
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>RETURN DATE</label>
           <input type="date" class="form-control" id="input-return-date">
         </div>
       </div>
 
       <!-- Row 6 -->
-      <div class="form-row">
-        <div class="form-group">
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>PASSENGERS (1-10)</label>
           <input type="number" class="form-control" id="input-passenger-count" min="1" max="10" value="1">
         </div>
-        <div class="form-group">
+        <div class="form-group" style="margin-bottom: 0;">
           <label>CABIN CLASS</label>
           <div class="select-wrapper">
             <select class="form-control" id="input-cabin-class">
@@ -530,16 +534,39 @@ input[type="date"] { color-scheme: dark light; }
       <!-- Row 8 -->
       <div class="form-group">
         <label>TARGET AIRLINES (Multi-Select)</label>
-        <div class="form-row" style="align-items: center;">
+        <div class="form-row" style="align-items: center; margin-bottom: 0;">
           <div class="select-wrapper" style="flex: 0 0 160px; max-width: 160px;">
             <select class="form-control" id="input-add-airline" onchange="ApplicationLogic.addAirlinePill(this)">
-              <option value="" disabled selected id="ui-opt-add-carrier">+ Add Carrier...</option>
-              <!-- Populated by JS -->
+              <option value="" disabled selected hidden id="ui-opt-add-carrier">+ Add Carrier...</option>
+              <optgroup label="North America">
+                <option value="AC">Air Canada (AC)</option>
+                <option value="AS">Alaska Airlines (AS)</option>
+                <option value="AA">American Airlines (AA)</option>
+                <option value="DL">Delta Air Lines (DL)</option>
+                <option value="B6">JetBlue Airways (B6)</option>
+                <option value="WN">Southwest Airlines (WN)</option>
+                <option value="UA">United Airlines (UA)</option>
+                <option value="WS">WestJet (WS)</option>
+              </optgroup>
+              <optgroup label="Asia">
+                <option value="NH">All Nippon Airways (NH)</option>
+                <option value="OZ">Asiana Airlines (OZ)</option>
+                <option value="CX">Cathay Pacific (CX)</option>
+                <option value="CI">China Airlines (CI)</option>
+                <option value="BR">EVA Air (BR)</option>
+                <option value="JL">Japan Airlines (JL)</option>
+                <option value="KE">Korean Air (KE)</option>
+                <option value="SQ">Singapore Airlines (SQ)</option>
+              </optgroup>
+              <optgroup label="Europe">
+                <option value="AF">Air France (AF)</option>
+                <option value="BA">British Airways (BA)</option>
+                <option value="LH">Lufthansa (LH)</option>
+              </optgroup>
             </select>
           </div>
           <div class="pill-container" id="container-airline-tags" style="flex: 1; border: none; background: transparent; padding: 0;">
-            <div class="airline-pill">DL <span onclick="this.parentElement.remove()">✕</span></div>
-            <div class="airline-pill">JL <span onclick="this.parentElement.remove()">✕</span></div>
+            <!-- Start empty per DIFF-50 -->
           </div>
         </div>
       </div>
@@ -658,6 +685,27 @@ input[type="date"] { color-scheme: dark light; }
   </div>
 </div>
 
+<!-- 7. Validation Error Modal -->
+<div class="modal-overlay" id="modal-validation-error">
+  <div class="modal-content" style="max-width: 400px; border-color: var(--warning);">
+    <div class="modal-header" style="color: var(--warning);">
+      <span>⚠️ INVALID ITINERARY</span>
+      <button class="secondary-btn" style="padding:6px 12px;" onclick="UIEngine.closeModal('modal-validation-error')">✕</button>
+    </div>
+    <div class="modal-body" style="font-size: 13px; line-height: 1.6;">
+      Please correct the following errors before tracking:
+      <ul style="margin-left: 20px; margin-top: 10px; color: var(--text-muted);">
+        <li>Origin and Destination must be valid 3-letter IATAs.</li>
+        <li>Departure date cannot be in the past.</li>
+        <li>Return date must be after departure date.</li>
+      </ul>
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end;">
+      <button class="primary-btn" onclick="UIEngine.closeModal('modal-validation-error')">DISMISS</button>
+    </div>
+  </div>
+</div>
+
 <!-- ==========================================================================
      LAYER 5: APPLICATION LOGIC
      ========================================================================== -->
@@ -694,7 +742,7 @@ const FirebaseEngine = {
       if (typeof firebase !== 'undefined') {
         this.app = firebase.initializeApp(window.CONFIG.FIREBASE);
         this.db = firebase.firestore();
-        console.log("Firebase initialized. Awaiting live listeners (v0.4).");
+        console.log("Firebase initialized. Awaiting live listeners (v0.5).");
       }
     } catch(e) { console.warn("Firebase offline. Utilizing local state.", e); }
   }
@@ -711,19 +759,6 @@ const AIRPORT_DICTIONARY = [
   { iata: "YYC", city: "Calgary", name: "Calgary Int." }, { iata: "YOW", city: "Ottawa", name: "Macdonald-Cartier" }
 ];
 
-const AIRLINE_DICTIONARY = [
-  { code: "AC", name: "Air Canada (AC)" }, { code: "WS", name: "WestJet (WS)" },
-  { code: "DL", name: "Delta Air Lines (DL)" }, { code: "UA", name: "United Airlines (UA)" },
-  { code: "AA", name: "American Airlines (AA)" }, { code: "AS", name: "Alaska Airlines (AS)" },
-  { code: "B6", name: "JetBlue Airways (B6)" }, { code: "WN", name: "Southwest Airlines (WN)" },
-  { code: "NH", name: "All Nippon Airways (NH)" }, { code: "JL", name: "Japan Airlines (JL)" },
-  { code: "SQ", name: "Singapore Airlines (SQ)" }, { code: "CX", name: "Cathay Pacific (CX)" },
-  { code: "BA", name: "British Airways (BA)" }, { code: "AF", name: "Air France (AF)" },
-  { code: "LH", name: "Lufthansa (LH)" }, { code: "KE", name: "Korean Air (KE)" },
-  { code: "OZ", name: "Asiana Airlines (OZ)" }, { code: "CI", name: "China Airlines (CI)" },
-  { code: "BR", name: "EVA Air (BR)" }
-];
-
 /* --- UI MANIPULATION --- */
 const UIEngine = {
   openModal(id) { document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open'); },
@@ -738,10 +773,10 @@ const ApplicationLogic = {
 
   init() {
     this.hydrateConfigStrings();
-    this.populateAirlineDropdown();
     this.calculateDynamicQuota();
     this.setupDateLocks();
     this.setupIataAutocomplete();
+    this.setupCurrencyBinding();
     this.renderDashboardState();
     
     // Fallback static UI hydration guards
@@ -763,27 +798,15 @@ const ApplicationLogic = {
     document.getElementById('input-trip-tag').placeholder = window.CONFIG.PLACEHOLDER_TRIP_NAME;
     document.getElementById('ui-opt-add-carrier').innerText = window.CONFIG.PLACEHOLDER_ADD_CARRIER;
     
-    document.getElementById('input-origin-iata').value = window.CONFIG.DEFAULT_HOME_ORIGIN_AIRPORT_IATA;
-    document.getElementById('input-cabin-class').value = window.CONFIG.DEFAULT_CABIN_CLASS;
     document.getElementById('input-lock-threshold').value = window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS;
     
-    document.getElementById('ui-btn-add-flight-main').innerHTML = `✈️ ${window.CONFIG.BTN_ADD_FLIGHT_MAIN.toUpperCase()} 🚀`;
+    document.getElementById('ui-btn-add-flight-main').innerText = window.CONFIG.BTN_ADD_FLIGHT_MAIN;
     document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT_EMPTY;
     document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
 
     if(window.CONFIG.ENABLE_DEV_DATA_SHUFFLE) {
       document.getElementById('ui-btn-shuffle').style.display = "flex";
     }
-  },
-
-  populateAirlineDropdown() {
-    const select = document.getElementById('input-add-airline');
-    AIRLINE_DICTIONARY.forEach(air => {
-      const opt = document.createElement('option');
-      opt.value = air.code;
-      opt.innerText = air.name;
-      select.appendChild(opt);
-    });
   },
 
   calculateDynamicQuota() {
@@ -872,14 +895,14 @@ const ApplicationLogic = {
         
         if(val.length < 1) { dropdown.style.display = "none"; return; }
         
-        const matches = AIRPORT_DICTIONARY.filter(a => a.iata.includes(val) || a.city.toUpperCase().includes(val));
+        const matches = AIRPORT_DICTIONARY.filter(a => a.iata.includes(val) || a.city.toUpperCase().includes(val) || a.name.toUpperCase().includes(val));
         if(matches.length > 0) {
           dropdown.style.display = "block";
           matches.forEach(m => {
             const div = document.createElement('div');
             div.className = "autocomplete-item";
             div.innerText = `${m.iata} - ${m.city} (${m.name})`;
-            div.onclick = () => { input.value = m.iata; dropdown.style.display = "none"; };
+            div.onclick = () => { input.value = `${m.iata} - ${m.city} (${m.name})`; dropdown.style.display = "none"; };
             dropdown.appendChild(div);
           });
         } else { dropdown.style.display = "none"; }
@@ -890,14 +913,71 @@ const ApplicationLogic = {
     setup('input-dest-iata', 'dropdown-dest-iata');
   },
 
+  setupCurrencyBinding() {
+    document.querySelectorAll('input[name="input-currency-selection"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        const originInput = document.getElementById('input-origin-iata');
+        if(e.target.value === 'USD') {
+          originInput.value = "SFO - San Francisco (SFO Int.)";
+        } else if(e.target.value === 'CAD') {
+          originInput.value = "YYZ - Toronto (Pearson Int.)";
+        }
+      });
+    });
+  },
+
+  openAddFlightModal() {
+    // Diff-51: Clean slate reset
+    document.getElementById('input-trip-tag').value = "";
+    document.querySelector('input[name="input-currency-selection"][value="USD"]').checked = true;
+    document.getElementById('input-origin-iata').value = "SFO - San Francisco (SFO Int.)";
+    document.getElementById('input-dest-iata').value = "";
+    document.getElementById('input-departure-date').value = "";
+    document.getElementById('input-return-date').value = "";
+    document.getElementById('input-trip-type').value = "round-trip";
+    document.getElementById('input-stop-filter').value = "nonstop";
+    document.getElementById('input-passenger-count').value = "1";
+    document.getElementById('input-cabin-class').value = window.CONFIG.DEFAULT_CABIN_CLASS;
+    document.getElementById('input-genesis-sweep-horizon-days').value = "14";
+    document.getElementById('ui-slider-val').innerText = "14";
+    
+    // Restore all dropdown options and clear pills
+    document.getElementById('container-airline-tags').innerHTML = "";
+    document.querySelectorAll('#input-add-airline option').forEach(opt => {
+      if(opt.value !== "") { opt.disabled = false; opt.hidden = false; }
+    });
+    document.getElementById('input-add-airline').value = "";
+    
+    this.toggleReturnDate();
+    UIEngine.openModal('modal-add-flight');
+  },
+
   addAirlinePill(selectElement) {
     if(!selectElement.value) return;
+    const code = selectElement.value;
     const container = document.getElementById('container-airline-tags');
+    
     const div = document.createElement('div');
     div.className = "airline-pill";
-    div.innerHTML = `${selectElement.value} <span onclick="this.parentElement.remove()">✕</span>`;
+    div.setAttribute('data-code', code);
+    div.innerHTML = `${code} <span onclick="ApplicationLogic.removeAirlinePill('${code}', this.parentElement)">✕</span>`;
     container.appendChild(div);
+    
+    // Hide and disable to prevent duplicates
+    const option = selectElement.options[selectElement.selectedIndex];
+    option.disabled = true;
+    option.hidden = true;
     selectElement.value = "";
+  },
+
+  removeAirlinePill(code, element) {
+    element.remove();
+    // Restore into region grouping
+    const option = document.querySelector(`#input-add-airline option[value="${code}"]`);
+    if(option) {
+      option.disabled = false;
+      option.hidden = false;
+    }
   },
 
   renderDashboardState() {
@@ -932,17 +1012,22 @@ const ApplicationLogic = {
   },
 
   initializeNewRoute() {
-    const origin = document.getElementById('input-origin-iata').value;
-    const dest = document.getElementById('input-dest-iata').value;
+    const originRaw = document.getElementById('input-origin-iata').value.trim();
+    const destRaw = document.getElementById('input-dest-iata').value.trim();
     const currency = document.querySelector('input[name="input-currency-selection"]:checked').value;
     const horizon = parseInt(document.getElementById('input-genesis-sweep-horizon-days').value);
     const tag = document.getElementById('input-trip-tag').value || "Untagged Trip";
 
+    // Defensive parsing
+    const origin = originRaw.slice(0, 3).toUpperCase();
+    const dest = destRaw.slice(0, 3).toUpperCase();
+
     if(!origin || !dest || origin.length !== 3 || dest.length !== 3) {
-      alert("Please ensure Origin and Destination IATA codes are valid."); return;
+      UIEngine.openModal('modal-validation-error'); 
+      return;
     }
 
-    const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'});
+    const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'});
     
     const routeObj = {
       id: "rt_" + Date.now(),
@@ -955,7 +1040,7 @@ const ApplicationLogic = {
       avgPrice: 420,
       lowBound: 310,
       hiBound: 580,
-      historyLog: [`${todayStr}: DL 412 (Baseline)`]
+      historyLog: [`${todayStr} : DL 412 (Genesis)`]
     };
 
     this.activeMonitoredRoutesList.push(routeObj);
@@ -1024,6 +1109,14 @@ const ApplicationLogic = {
         label.innerHTML = `<span class="date">${d.toLocaleDateString('en-US', {month:'numeric', day:'numeric', year:'2-digit'})}</span>Day ${i+1}`;
         container.appendChild(label);
       }
+      
+      if (i === 0 || i === route.horizon - 1) {
+        const anchorLabel = document.createElement('div');
+        anchorLabel.className = "anchor-label";
+        anchorLabel.innerHTML = `${i === 0 ? "Outbound" : "Return"}<br>Anchor`;
+        container.appendChild(anchorLabel);
+      }
+      
       chart.appendChild(container);
     }
 
@@ -1049,12 +1142,12 @@ const ApplicationLogic = {
       route.hiBound = route.lowBound + Math.floor(Math.random() * 300) + 150;
       route.avgPrice = route.lowBound + Math.floor((route.hiBound - route.lowBound) / 2);
       
-      const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'});
+      const todayStr = new Date().toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'});
       const airlines = ['DL', 'AC', 'UA', 'AA', 'JL'];
       const rndCarrier = airlines[Math.floor(Math.random() * airlines.length)];
       const rndFlight = Math.floor(Math.random() * 900) + 100;
       
-      route.historyLog.unshift(`${todayStr}: ${rndCarrier} ${rndFlight} (Shuffle)`);
+      route.historyLog.unshift(`${todayStr} : ${rndCarrier} ${rndFlight}`);
       if(route.historyLog.length > 5) route.historyLog.pop(); // Keep log tidy
       
       this.updateOracleUI(route);
