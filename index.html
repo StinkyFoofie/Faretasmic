@@ -9,8 +9,8 @@ window.CONFIG = {
   /* ========================================================================
      SECTION 1: APP IDENTITY (Alphabetical)
      ======================================================================== */
-  APP_TITLE: "✨ Faretasmic!!!",
-  APP_VERSION: "v0.7",
+  APP_TITLE: "✨ Faretasmic!!!!!",
+  APP_VERSION: "v0.8",
 
   /* ========================================================================
      SECTION 2: FIREBASE CONFIGURATION
@@ -49,11 +49,11 @@ window.CONFIG = {
   EMOJI_BTN_SHUFFLE_QA: "🎲",
   EMOJI_BTN_THEME: "🎨",
 
-  EMPTY_STATE_SUBTITLE: "Add a flight to begin price tracking!",
-  EMPTY_STATE_TITLE: "🔭 No Flights Monitored!",
-  PLACEHOLDER_ADD_CARRIER: "+ Add Airline...",
+  EMPTY_STATE_SUBTITLE: "Configure a route to begin price surveillance.",
+  EMPTY_STATE_TITLE: "🔭 No Flights Monitored",
+  PLACEHOLDER_ADD_CARRIER: "+ Add Carrier...",
   PLACEHOLDER_DESTINATION_IATA: "Select Destination",
-  PLACEHOLDER_SELECT_ROUTE: "Add Flight...",
+  PLACEHOLDER_SELECT_ROUTE: "-- Select Route --",
   PLACEHOLDER_TRIP_NAME: "Another Disney Vacation...",
   TOAST_FLIGHT_ADDED: "🚀 Flight Added! Surveillance Active",
   TOAST_SETTINGS_SAVED: "⚙️ Settings Successfully Saved",
@@ -157,7 +157,7 @@ input[type="date"] { color-scheme: dark light; }
 .app-version { font-size: 0.65em; opacity: 0.75; font-family: var(--font-main); }
 .header-actions { display: flex; gap: 8px; }
 
-/* High-Density 2-Row Telemetry (DIFF-88 Desktop Scaling) */
+/* High-Density 2-Row Telemetry */
 .telemetry-tray { display: flex; flex: 1; justify-content: center; align-items: center; gap: 36px; }
 .telemetry-item { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .telemetry-indicator { font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; }
@@ -166,13 +166,16 @@ input[type="date"] { color-scheme: dark light; }
 .telemetry-sub { font-size: 12px; color: var(--text-muted); }
 
 @media (max-width: 880px) {
-  .telemetry-tray { flex-basis: 100%; order: 3; justify-content: space-between; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin-top: 5px; gap: 12px; }
+  /* DIFF-97: Center wrapped telemetry */
+  .telemetry-tray { flex-basis: 100%; order: 3; justify-content: center; justify-items: center; text-align: center; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin-top: 5px; gap: 12px; }
   .telemetry-indicator { font-size: 16px; }
   .telemetry-label { font-size: 11px; }
   .telemetry-sub { font-size: 10px; }
+  /* DEF-19: Wrap detail panels fully */
+  .details-wrapper { flex-direction: column !important; }
+  .details-panel-75, .details-panel-25 { flex: 1 1 100% !important; min-width: 0; width: 100% !important; height: auto; max-height: none; }
 }
 @media (max-width: 600px) {
-  /* DIFF-92: Mobile 2x2 Grid */
   .telemetry-tray {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
@@ -184,10 +187,6 @@ input[type="date"] { color-scheme: dark light; }
   .telemetry-item { display: flex; align-items: center; gap: 8px; min-width: 0; justify-content: flex-start; }
   .telemetry-text-group { min-width: 0; overflow: hidden; }
   .telemetry-label, .telemetry-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  
-  /* DEF-15: Mobile Vertical Stack */
-  .details-wrapper { flex-direction: column !important; }
-  .details-panel-75, .details-panel-25 { flex: 1 1 100% !important; min-width: 0; width: 100%; }
 }
 
 .main-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
@@ -234,38 +233,50 @@ input[type="date"] { color-scheme: dark light; }
   border-radius: var(--radius); margin-top: 4px; margin-bottom: 8px; width: 100%; box-sizing: border-box;
 }
 .gauge-container { overflow: visible; position: relative; border: none; flex-direction: row; }
-.gauge-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); }
+.gauge-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: var(--text-inverse); font-family: var(--font-heading); }
 .gauge-low { flex: 1; background: var(--success); opacity: 0.8; }
 .gauge-typ { flex: 2; background: var(--warning); opacity: 0.8; }
 .gauge-hi { flex: 1; background: var(--danger); opacity: 0.8; }
 .gauge-marker { position: absolute; top: -5px; width: 3px; height: 48px; background: var(--text-main); box-shadow: 0 0 6px rgba(0,0,0,0.7); z-index: 3; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
 
-.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 5px; }
-.y-axis { display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 50px; }
+/* DEF-17 & DIFF-95: Axis Stratification & Y-Axis Rotation */
+.chart-wrapper { display: flex; gap: 10px; align-items: stretch; margin-top: 5px; margin-bottom: 48px; }
+.y-axis { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end; font-size: 10px; color: var(--text-muted); text-align: right; padding-bottom: 24px; border-right: 1px solid var(--border); padding-right: 5px; min-width: 40px; position: relative; padding-top: 10px; padding-left: 20px; }
+.y-axis-label-vert { position: absolute; left: 0; top: 50%; transform: translateY(-50%) rotate(180deg); writing-mode: vertical-rl; font-weight: bold; color: var(--text-main); font-size: 10px; white-space: nowrap; }
+
 .mock-chart { flex: 1; height: 160px; background: var(--bg-input); border-radius: var(--radius); border: 1px dashed var(--border); display: flex; align-items: flex-end; padding: 10px 10px 28px 10px; gap: 4px; position: relative; }
 .chart-bar-container { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; z-index: 2; }
 .chart-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; opacity: 0.6; position: relative; min-height: 4px; transition: height 0.3s ease; }
 .chart-bar.anchor { background: var(--success); opacity: 1; }
-.x-axis-label { position: absolute; bottom: -24px; font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: center; line-height: 1.1; }
+
+.x-axis-label { position: absolute; bottom: -22px; font-size: 9px; color: var(--text-muted); white-space: nowrap; text-align: center; line-height: 1.1; transform: translateX(-50%); left: 50%; }
 .x-axis-label .date { display: block; font-weight: bold; color: var(--text-main); font-size: 10px; }
+.anchor-label-block { position: absolute; bottom: -48px; font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; white-space: nowrap; transform: translateX(-50%); left: 50%; }
 
-/* SVG Line Chart Sublayer */
+/* SVG Line Chart Sublayer & HTML Scatter Dots (DEF-18) */
 .chart-svg-layer { position: absolute; top: 10px; left: 10px; right: 10px; bottom: 28px; z-index: 1; pointer-events: none; }
+.chart-scatter-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 3; }
 
-/* External Anchor Legends */
 .oracle-anchors-container { font-size: 13px; line-height: 1.6; margin-top: 4px; text-align: center; }
-.anchor-label-block { position: absolute; bottom: -30px; font-size: 10px; color: var(--text-muted); text-align: center; line-height: 1.3; white-space: nowrap; transform: translateX(-50%); }
 
 /* --- 7. DASHBOARD GRID & ACTION ROW --- */
 .details-wrapper { display: flex; gap: 15px; flex-wrap: wrap; width: 100%; }
-.details-panel-75 { flex: 3 1 400px; }
-.details-panel-25 { flex: 1 1 150px; }
+.details-panel-75 { flex: 1 1 400px; }
+.details-panel-25 { flex: 1 1 250px; }
+/* DEF-16: Panel Static Ceilings */
+.details-panel-75, .details-panel-25 { min-height: 175px; max-height: 175px; height: 175px; }
 
-/* DIFF-90: Consolidated 3-Column Grid Row */
+/* DIFF-94: Itinerary Micro-Grid */
+.itinerary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 11px; line-height: 1.5; color: var(--text-main); }
+.itinerary-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.itinerary-carriers { white-space: normal; word-break: break-word; }
+@media (max-width: 600px) { .itinerary-grid { grid-template-columns: 1fr; } }
+
 .action-btn-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
 .action-btn-row > button { width: 100%; min-height: 42px; padding: 0 8px; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 80px; overflow-y: auto; list-style: none; }
+/* DEF-16: History Log Constraint */
+.history-list { font-size: 12px; line-height: 1.6; color: var(--text-muted); max-height: 115px; overflow-y: auto; list-style: none; padding-right: 5px; }
 
 /* --- 8. MODALS & FORMS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-backdrop); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; overscroll-behavior: contain; }
@@ -301,30 +312,59 @@ input[type="date"] { color-scheme: dark light; }
 #empty-state-canvas { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); gap: 15px; }
 .hidden { display: none !important; }
 
-/* --- 9. TOAST NOTIFICATIONS (DIFF-87 5-Second Glowing Toasts) --- */
+/* --- 9. TOAST NOTIFICATIONS (DIFF-100 Celestial Engine) --- */
 .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 10001; pointer-events: none; display: flex; flex-direction: column; gap: 10px; }
 .theme-toast { 
   background: var(--bg-surface); 
   color: var(--text-main); 
   border: 2px solid var(--accent); 
   border-radius: var(--radius); 
-  box-shadow: var(--shadow), 0 0 16px var(--accent); 
   padding: 16px 32px; 
   font-size: 17px; 
   font-weight: 700; 
   display: flex; 
   align-items: center; 
   gap: 10px; 
-  animation: toastFlyIn 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards, toastFlyOut 0.4s ease-in 4.65s forwards; 
+  animation: magicalBloomIn 0.38s cubic-bezier(0.18, 1.25, 0.35, 1.15) forwards, livingAura 2.5s ease-in-out infinite alternate; 
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              margin 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              transform 0.3s ease,
+              filter 0.3s ease;
+  max-height: 120px;
+  overflow: hidden;
 }
-@keyframes toastFlyIn { from { opacity: 0; transform: translateY(-30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes toastFlyOut { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(-40px) scale(0.85); } }
+@keyframes magicalBloomIn { 
+  0% { opacity: 0; transform: translateY(-18px) scale(0.85); box-shadow: 0 0 30px var(--accent); } 
+  70% { opacity: 1; transform: translateY(2px) scale(1.03); } 
+  100% { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 0 16px var(--accent); } 
+}
+@keyframes livingAura {
+  0% { box-shadow: var(--shadow), 0 0 12px var(--accent); }
+  100% { box-shadow: var(--shadow), 0 0 22px var(--accent); }
+}
+.theme-toast.magic-collapsing {
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: -10px !important;
+  opacity: 0 !important;
+  filter: blur(6px) !important;
+  transform: translateY(-14px) scale(0.92) !important;
+}
 
 /* Deep-Link Router Flight Cards */
 .router-card { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s ease; }
 .router-card:hover { border-color: var(--accent); background: var(--bg-surface-hover); transform: translateY(-2px); box-shadow: var(--shadow); }
 .router-card-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
 .router-card-sub { font-size: 11px; color: var(--text-muted); }
+
+/* DIFF-102: Router Modal Airline Grid */
+#container-router-airlines { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 8px; }
+#container-router-airlines .router-card-title { white-space: normal; line-height: 1.25; word-break: break-word; }
+@media (max-width: 480px) { #container-router-airlines { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -341,7 +381,7 @@ input[type="date"] { color-scheme: dark light; }
   <header class="header-tray">
     <div class="header-brand">
       <h2 id="ui-app-title">✨ Faretasmic!</h2>
-      <span id="ui-app-version" class="app-version">v0.7</span>
+      <span id="ui-app-version" class="app-version">v0.8</span>
     </div>
     
     <div class="telemetry-tray">
@@ -413,11 +453,6 @@ input[type="date"] { color-scheme: dark light; }
         <div class="panel-title" style="text-align: center;">Predictive Oracle Engine</div>
         <div id="badge-oracle-recommendation-status" class="status-badge status-buy">📉 BUY NOW: -14% vs 14 DAY BASELINE</div>
         
-        <div class="oracle-anchors-container">
-          <div>Outbound Anchor: <strong id="ui-anchor-outbound" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
-          <div>Return Anchor: <strong id="ui-anchor-return" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
-        </div>
-        
         <div style="margin-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: bold; text-align: center;">
           HISTORICAL PRICE GAUGE (<span id="ui-gauge-horizon">14</span>-DAY SET)
         </div>
@@ -426,6 +461,15 @@ input[type="date"] { color-scheme: dark light; }
           <div class="gauge-segment gauge-typ">TYPICAL</div>
           <div class="gauge-segment gauge-hi" id="ui-gauge-hi-bounds">$580</div>
           <div class="gauge-marker" id="ui-gauge-needle" style="left: 20%;"></div>
+        </div>
+        
+        <!-- DIFF-96: Reordered Anchors -->
+        <div style="margin-top: 7px; font-size: 13px; color: var(--text-muted); font-weight: bold; text-align: center; text-transform: uppercase;">
+          Anchors
+        </div>
+        <div class="oracle-anchors-container">
+          <div>Outbound Anchor: <strong id="ui-anchor-outbound" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
+          <div>Return Anchor: <strong id="ui-anchor-return" style="color: var(--text-main);">$0.00</strong> (<span class="ui-currency-label">USD</span>)</div>
         </div>
       </div>
       
@@ -459,7 +503,7 @@ input[type="date"] { color-scheme: dark light; }
           
           <div class="chart-wrapper">
             <div class="y-axis">
-              <div style="line-height: 1.1; font-weight: bold; color: var(--text-main);">Price<br><span style="font-size: 9px; color: var(--text-muted);">(<span class="ui-currency-label">USD</span>)</span></div>
+              <div class="y-axis-label-vert">Price (<span class="ui-currency-label">USD</span>)</div>
               <span id="ui-y-axis-high">$580</span>
               <span id="ui-y-axis-mid">$445</span>
               <span id="ui-y-axis-low">$310</span>
@@ -473,8 +517,8 @@ input[type="date"] { color-scheme: dark light; }
         <div class="details-wrapper">
           <div class="panel details-panel-75">
             <div class="panel-title">Selected Itinerary Details</div>
-            <div style="font-size: 13px; line-height: 1.6; margin-top: 2px;" id="ui-itinerary-details">
-              <!-- Injected by JS -->
+            <div style="margin-top: 2px;" id="ui-itinerary-details">
+              <!-- Injected by JS (DIFF-94 Micro-Grid) -->
             </div>
           </div>
           <div class="panel details-panel-25">
@@ -817,7 +861,7 @@ input[type="date"] { color-scheme: dark light; }
   </div>
 </div>
 
-<!-- 8. Flight Search Router Modal (FEAT-19) -->
+<!-- 8. Flight Search Router Modal -->
 <div class="modal-overlay" id="modal-flight-router">
   <div class="modal-content" style="max-width: 500px;">
     <div class="modal-header">
@@ -835,15 +879,16 @@ input[type="date"] { color-scheme: dark light; }
 
       <div class="form-group" style="margin-top: 10px;">
         <label>MONITORED AIRLINES (Direct Search)</label>
-        <div id="container-router-airlines" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-          <!-- Injected via JS -->
+        <div id="container-router-airlines">
+          <!-- DIFF-102: Injected via JS (Grid) -->
         </div>
       </div>
 
       <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
 
+      <!-- DIFF-101: Aggregator rename -->
       <div class="form-group">
-        <label>AGGREGATOR SEARCH</label>
+        <label>GOOGLE FLIGHTS SEARCH</label>
         <div class="router-card" onclick="ApplicationLogic.fireRouterStub('Google Flights')" style="margin-top: 8px; border-color: var(--accent);">
           <div>
             <div class="router-card-title">🌐 Search All on Google Flights</div>
@@ -904,7 +949,7 @@ const FirebaseEngine = {
       if (typeof firebase !== 'undefined') {
         this.app = firebase.initializeApp(window.CONFIG.FIREBASE);
         this.db = firebase.firestore();
-        console.log("Firebase initialized. Awaiting live listeners (v0.7).");
+        console.log("Firebase initialized. Awaiting live listeners (v0.8).");
       }
     } catch(e) { console.warn("Firebase offline. Utilizing local state.", e); }
   }
@@ -1031,13 +1076,19 @@ const CustomSelectEngine = {
 const UIEngine = {
   openModal(id) { document.getElementById(id).classList.add('active'); document.body.classList.add('modal-open'); },
   closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.classList.remove('modal-open'); },
+  
+  // DIFF-100: Celestial Toast Engine (Collapse Animation)
   showToast(message) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'theme-toast';
     toast.innerText = message;
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 5200); // 5-second persistence (+0.2s grace)
+    
+    setTimeout(() => {
+      toast.classList.add('magic-collapsing');
+      setTimeout(() => toast.remove(), 350);
+    }, 5000);
   }
 };
 
@@ -1059,7 +1110,6 @@ const ApplicationLogic = {
     CustomSelectEngine.init();
     this.renderDashboardState();
     
-    // Fallback static UI hydration guards
     const btnSettings = document.getElementById('ui-btn-settings');
     if (btnSettings && !btnSettings.innerHTML.trim()) btnSettings.innerHTML = "⚙️";
     const btnTheme = document.getElementById('ui-btn-theme');
@@ -1080,7 +1130,6 @@ const ApplicationLogic = {
     
     document.getElementById('input-lock-threshold').value = window.CONFIG.DEFAULT_FAILSAFE_LOCKOUT_CALLS;
     
-    // Decoupled Header Icons & Tooltips
     const btnSet = document.getElementById('ui-btn-settings');
     btnSet.innerText = window.CONFIG.EMOJI_BTN_SETTINGS;
     btnSet.title = window.CONFIG.TOOLTIP_BTN_SETTINGS;
@@ -1096,7 +1145,6 @@ const ApplicationLogic = {
       btnShf.style.display = "flex";
     }
 
-    // Action buttons
     document.getElementById('ui-btn-add-flight-main').innerText = window.CONFIG.BTN_ADD_FLIGHT_MAIN;
     document.getElementById('ui-btn-add-flight-empty').innerText = window.CONFIG.BTN_ADD_FLIGHT_EMPTY;
     document.getElementById('ui-btn-start-tracking').innerText = window.CONFIG.BTN_START_TRACKING;
@@ -1126,7 +1174,6 @@ const ApplicationLogic = {
 
   calculateDynamicQuota() {
     const callsRemaining = window.CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS - this.monthlyApiFetchCounter;
-    // 30 days logic: 14 base + (2 calls * 30) = 74 calls per route tracking cycle
     const maxMonitors = Math.floor(callsRemaining / ((2 * 30) + 14));
     document.getElementById('ui-monitor-max').innerText = maxMonitors;
   },
@@ -1383,10 +1430,16 @@ const ApplicationLogic = {
     const horizon = this.calculateTotalSweep() || 14;
     
     const tripType = CustomSelectEngine.getValue('cs-trip-type') || "round-trip";
+    const cabin = CustomSelectEngine.getValue('cs-cabin-class') || "economy";
+    const stopFilter = CustomSelectEngine.getValue('cs-stop-filter') || "nonstop";
+    
     const depDateRaw = document.getElementById('input-departure-date').value;
     const retDateRaw = document.getElementById('input-return-date').value;
     const pax = document.getElementById('input-passenger-count').value;
-    const cabin = CustomSelectEngine.getValue('cs-cabin-class') || "economy";
+
+    const preBuffer = document.getElementById('input-sweep-buffer-pre').value;
+    const coreSpan = document.getElementById('input-sweep-core-span').value;
+    const postBuffer = document.getElementById('input-sweep-buffer-post').value;
 
     const airlines = Array.from(document.querySelectorAll('#container-airline-tags .airline-pill')).map(p => p.getAttribute('data-code'));
 
@@ -1426,6 +1479,10 @@ const ApplicationLogic = {
       retDate: retDateRaw,
       pax: pax,
       cabin: cabin,
+      stopFilter: stopFilter,
+      preBuffer: preBuffer,
+      coreSpan: coreSpan,
+      postBuffer: postBuffer,
       airlines: airlines
     };
 
@@ -1527,12 +1584,13 @@ const ApplicationLogic = {
         const px = (i / (route.horizon - 1)) * 100;
         const py = 100 - (((route.dataPoints[i] - cLow) / cRange) * 100);
         
-        const circle = document.createElementNS(svgns, "circle");
-        circle.setAttribute("cx", px);
-        circle.setAttribute("cy", py);
-        circle.setAttribute("r", "2");
-        circle.setAttribute("fill", (i===0 || i===route.horizon-1) ? "var(--success)" : "var(--accent)");
-        svg.appendChild(circle);
+        // DEF-18: HTML Scatter Dots overlay (No SVG circle distortion)
+        const dot = document.createElement('div');
+        dot.className = 'chart-scatter-dot';
+        dot.style.left = `${px}%`;
+        dot.style.top = `${py}%`;
+        dot.style.backgroundColor = (i===0 || i===route.horizon-1) ? "var(--success)" : "var(--accent)";
+        svgLayer.appendChild(dot);
         
         pathD += `${i===0 ? 'M' : 'L'} ${px} ${py} `;
         
@@ -1583,13 +1641,41 @@ const ApplicationLogic = {
     document.getElementById('ui-trueup-required').innerText = route.horizon;
     document.getElementById('ui-trueup-projected').innerText = this.monthlyApiFetchCounter + route.horizon;
     
-    const d1 = route.depDate ? new Date(route.depDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'TBD';
+    // DIFF-94: 3-Column Itinerary Micro-Grid 
+    const d1 = route.depDate ? new Date(route.depDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'TBD';
     const d2 = route.retDate ? new Date(route.retDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'TBD';
     const typeStr = route.tripType === 'one-way' ? 'One-Way' : 'Round-Trip';
+    const cabStr = route.cabin ? route.cabin.charAt(0).toUpperCase() + route.cabin.slice(1) : 'Economy';
+    
+    let filterLabel = "Nonstop Only";
+    if (route.stopFilter === '1stop') filterLabel = "Max 1 Stop";
+    if (route.stopFilter === 'any') filterLabel = "Any Stops";
+
+    let carrierBadges = "Any";
+    if (route.airlines && route.airlines.length > 0) {
+      carrierBadges = route.airlines.map(c => `[${c}]`).join(' ');
+    }
+
     document.getElementById('ui-itinerary-details').innerHTML = `
-      🛫 Outbound: ${route.origin} ➔ ${route.dest} | ${d1}<br>
-      🛬 Return: ${route.dest} ➔ ${route.origin} | ${d2}<br>
-      ${typeStr} | ${route.pax} Pax
+      <div class="itinerary-grid">
+        <div class="itinerary-col">
+          <div class="itinerary-tag">🏷️ <strong>${route.tag}</strong> (${typeStr})</div>
+          <div>🛫 <strong>Outbound:</strong> ${route.origin} ➔ ${route.dest} (${d1})</div>
+          <div>🛬 <strong>Return:</strong> ${route.dest} ➔ ${route.origin} (${d2})</div>
+        </div>
+        <div class="itinerary-col">
+          <div>👤 <strong>Passengers:</strong> ${route.pax} PAX • ${cabStr}</div>
+          <div>🛑 <strong>Fare Filter:</strong> ${filterLabel}</div>
+          <div class="itinerary-carriers">✈️ <strong>Carriers:</strong> ${carrierBadges}</div>
+        </div>
+        <div class="itinerary-col">
+          <div>⏱️️ <strong>Tracking:</strong> ${route.trackingDuration} Days (${route.currency})</div>
+          <div>🔭 <strong>Genesis Sweep:</strong> ${route.horizon}-Day Model</div>
+          <div style="font-size: 10px; color: var(--text-muted);">
+            Vectors: Pre: ${route.preBuffer || 0}d | Core: ${route.coreSpan || 14}d | Post: ${route.postBuffer || 0}d
+          </div>
+        </div>
+      </div>
     `;
   },
 
@@ -1598,16 +1684,16 @@ const ApplicationLogic = {
     const route = this.activeMonitoredRoutesList.find(r => r.id === this.currentlySelectedRouteId);
     if(!route) return;
     
-    // Build Itinerary Summary
+    // Build Itinerary Summary (DIFF-98: PAX Capitalization)
     const d1 = route.depDate ? new Date(route.depDate).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : 'TBD';
     const d2 = route.retDate ? new Date(route.retDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : 'TBD';
     const typeStr = route.tripType === 'one-way' ? 'One-Way' : 'Round-Trip';
-    const cabStr = route.cabin.charAt(0).toUpperCase() + route.cabin.slice(1);
+    const cabStr = route.cabin ? route.cabin.charAt(0).toUpperCase() + route.cabin.slice(1) : 'Economy';
     
     document.getElementById('ui-router-summary').innerHTML = 
-      `${route.origin} ➔ ${route.dest} | ${typeStr} | ${d1} - ${d2} | ${route.pax} Pax | ${cabStr}`;
+      `${route.origin} ➔ ${route.dest} | ${typeStr} | ${d1} - ${d2} | ${route.pax} PAX | ${cabStr}`;
 
-    // Build Monitored Airlines Stubs
+    // DIFF-99 & DIFF-102: Direct Search Monitored Airlines Stubs
     const container = document.getElementById('container-router-airlines');
     container.innerHTML = "";
     
@@ -1622,15 +1708,14 @@ const ApplicationLogic = {
         container.innerHTML += `
           <div class="router-card" onclick="ApplicationLogic.fireRouterStub('${nameStr}')">
             <div>
-              <div class="router-card-title">🛫 Search on ${nameStr}</div>
-              <div class="router-card-sub">Deep-link to carrier checkout</div>
+              <div class="router-card-title">🛫 ${nameStr}</div>
             </div>
             <span style="font-size: 18px;">➔</span>
           </div>
         `;
       });
     } else {
-      container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 5px;">No specific carriers pinned. Defaulting to aggregator.</div>`;
+      container.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 5px;">No specific carriers pinned. Defaulting to Google Flights.</div>`;
     }
 
     UIEngine.openModal('modal-flight-router');
@@ -1662,7 +1747,7 @@ const ApplicationLogic = {
       const rndFlight = Math.floor(Math.random() * 900) + 100;
       
       route.historyLog.unshift(`${todayStr} : ${rndCarrier} ${rndFlight}`);
-      if(route.historyLog.length > 5) route.historyLog.pop(); // Keep log tidy
+      if(route.historyLog.length > 5) route.historyLog.pop();
       
       this.updateOracleUI(route);
     }
