@@ -1,6 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Route, CurrencyType, TripType, StopFilter, CabinClass, Airport } from '../../types';
+import React, { useState, useEffect } from 'react';
+import {
+  Route,
+  CurrencyType,
+  TripType,
+  StopFilter,
+  CabinClass,
+  TimeOfDay,
+  Airport,
+} from '../../types';
 import { APP_CONFIG, AIRPORT_DICTIONARY, AIRLINE_GROUPS } from '../../config';
+import { generateAeroFluxTrajectory } from '../../engine/aeroflux';
 
 interface AddFlightModalProps {
   isOpen: boolean;
@@ -21,13 +30,23 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
   const [tripType, setTripType] = useState<TripType>('round-trip');
   const [stopFilter, setStopFilter] = useState<StopFilter>('nonstop');
   const [cabin, setCabin] = useState<CabinClass>(APP_CONFIG.DEFAULT_CABIN_CLASS);
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('anytime');
 
+  // Route Origin & Dest
   const [originInput, setOriginInput] = useState('SFO - San Francisco (SFO Int.)');
   const [destInput, setDestInput] = useState('');
   const [originMatches, setOriginMatches] = useState<Airport[]>([]);
   const [destMatches, setDestMatches] = useState<Airport[]>([]);
   const [showOriginDrop, setShowOriginDrop] = useState(false);
   const [showDestDrop, setShowDestDrop] = useState(false);
+
+  // Open-Jaw Return Origin & Dest
+  const [returnOriginInput, setReturnOriginInput] = useState('');
+  const [returnDestInput, setReturnDestInput] = useState('');
+  const [returnOriginMatches, setReturnOriginMatches] = useState<Airport[]>([]);
+  const [returnDestMatches, setReturnDestMatches] = useState<Airport[]>([]);
+  const [showReturnOriginDrop, setShowReturnOriginDrop] = useState(false);
+  const [showReturnDestDrop, setShowReturnDestDrop] = useState(false);
 
   const [passengerCount, setPassengerCount] = useState<number>(1);
   const [depDate, setDepDate] = useState('');
@@ -40,10 +59,15 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
   const [selectedAirlines, setSelectedAirlines] = useState<string[]>([]);
   const [isAirlineDropOpen, setIsAirlineDropOpen] = useState(false);
 
+  // Baggage & Trip Notes
+  const [excludeBasicEconomy, setExcludeBasicEconomy] = useState(false);
+  const [tripNotes, setTripNotes] = useState('');
+
   // Dropdown states for custom selects
   const [isTripTypeDropOpen, setIsTripTypeDropOpen] = useState(false);
   const [isStopFilterDropOpen, setIsStopFilterDropOpen] = useState(false);
   const [isCabinDropOpen, setIsCabinDropOpen] = useState(false);
+  const [isTimeOfDayDropOpen, setIsTimeOfDayDropOpen] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -56,8 +80,11 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
       setTripType('round-trip');
       setStopFilter('nonstop');
       setCabin(APP_CONFIG.DEFAULT_CABIN_CLASS);
+      setTimeOfDay('anytime');
       setOriginInput('SFO - San Francisco (SFO Int.)');
       setDestInput('');
+      setReturnOriginInput('');
+      setReturnDestInput('');
       setPassengerCount(1);
       setDepDate('');
       setRetDate('');
@@ -65,9 +92,17 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
       setCoreSpan(14);
       setPostBuffer(0);
       setSelectedAirlines([]);
+      setExcludeBasicEconomy(false);
+      setTripNotes('');
       setShowOriginDrop(false);
       setShowDestDrop(false);
+      setShowReturnOriginDrop(false);
+      setShowReturnDestDrop(false);
       setIsAirlineDropOpen(false);
+      setIsTripTypeDropOpen(false);
+      setIsStopFilterDropOpen(false);
+      setIsCabinDropOpen(false);
+      setIsTimeOfDayDropOpen(false);
     }
   }, [isOpen]);
 
@@ -101,40 +136,43 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
   const totalSweep = (preBuffer || 0) + (coreSpan || 14) + (postBuffer || 0);
 
   // Autocomplete helpers
-  const handleOriginChange = (val: string) => {
-    const upper = val.toUpperCase();
-    setOriginInput(upper);
-    if (!upper.trim()) {
-      setOriginMatches([]);
-      setShowOriginDrop(false);
-      return;
-    }
-    const matches = AIRPORT_DICTIONARY.filter(
+  const filterAirports = (val: string) => {
+    const upper = val.toUpperCase().trim();
+    if (!upper) return [];
+    return AIRPORT_DICTIONARY.filter(
       (a) =>
         a.iata.includes(upper) ||
         a.city.toUpperCase().includes(upper) ||
         a.name.toUpperCase().includes(upper)
     );
+  };
+
+  const handleOriginChange = (val: string) => {
+    setOriginInput(val);
+    const matches = filterAirports(val);
     setOriginMatches(matches);
     setShowOriginDrop(matches.length > 0);
   };
 
   const handleDestChange = (val: string) => {
-    const upper = val.toUpperCase();
-    setDestInput(upper);
-    if (!upper.trim()) {
-      setDestMatches([]);
-      setShowDestDrop(false);
-      return;
-    }
-    const matches = AIRPORT_DICTIONARY.filter(
-      (a) =>
-        a.iata.includes(upper) ||
-        a.city.toUpperCase().includes(upper) ||
-        a.name.toUpperCase().includes(upper)
-    );
+    setDestInput(val);
+    const matches = filterAirports(val);
     setDestMatches(matches);
     setShowDestDrop(matches.length > 0);
+  };
+
+  const handleReturnOriginChange = (val: string) => {
+    setReturnOriginInput(val);
+    const matches = filterAirports(val);
+    setReturnOriginMatches(matches);
+    setShowReturnOriginDrop(matches.length > 0);
+  };
+
+  const handleReturnDestChange = (val: string) => {
+    setReturnDestInput(val);
+    const matches = filterAirports(val);
+    setReturnDestMatches(matches);
+    setShowReturnDestDrop(matches.length > 0);
   };
 
   const handleAddAirline = (code: string) => {
@@ -163,20 +201,29 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
       return;
     }
 
-    if (tripType === 'round-trip' && depDate && retDate && retDate < depDate) {
+    if (tripType !== 'one-way' && depDate && retDate && retDate < depDate) {
       onValidationError();
       return;
     }
 
+    const returnOrigin = tripType === 'open-jaw' && returnOriginInput.trim()
+      ? returnOriginInput.trim().slice(0, 3).toUpperCase()
+      : undefined;
+    const returnDest = tripType === 'open-jaw' && returnDestInput.trim()
+      ? returnDestInput.trim().slice(0, 3).toUpperCase()
+      : undefined;
+
     const horizon = totalSweep || 14;
-    const baseCurrent = Math.floor(Math.random() * 200) + 300;
-    const dataVals: number[] = [];
-    for (let i = 0; i < horizon; i++) {
-      const flux = Math.sin(i) * 15 + (Math.random() * 20 - 10);
-      dataVals.push(baseCurrent + flux);
-    }
-    dataVals[0] = baseCurrent;
-    dataVals[horizon - 1] = baseCurrent + 45;
+
+    const aeroSim = generateAeroFluxTrajectory({
+      origin,
+      dest,
+      horizon,
+      currency,
+      cabin,
+      pax: passengerCount,
+      depDate,
+    });
 
     const dateTodayFormatted = new Date().toLocaleDateString('en-US', {
       month: '2-digit',
@@ -184,27 +231,53 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
       year: '2-digit',
     });
 
+    const initialCarrier = selectedAirlines.length > 0 ? `${selectedAirlines[0]} 101` : 'DL 412';
+
+    // Calculate smart initial target for selected cabin (25th percentile)
+    const sortedPrices = [...aeroSim.dataPoints].sort((a, b) => a - b);
+    const p25Index = Math.floor(sortedPrices.length * 0.25);
+    const autoTarget = sortedPrices[p25Index] || aeroSim.currentPrice;
+
     const newRoute: Route = {
       id: 'rt_' + Date.now(),
       tag: tripTag.trim() || 'Untagged Trip',
       origin,
       dest,
+      returnOrigin,
+      returnDest,
       currency,
       horizon,
       trackingDuration: trackingDuration || 30,
-      currentPrice: baseCurrent,
-      dataPoints: dataVals,
-      historyLog: [`${dateTodayFormatted} : DL 412 (Genesis)`],
+      currentPrice: aeroSim.currentPrice,
+      dataPoints: aeroSim.dataPoints,
+      historyLog: [`${dateTodayFormatted} : ${initialCarrier} ($${aeroSim.currentPrice}.00 Genesis)`],
       tripType,
       depDate,
       retDate: tripType === 'one-way' ? '' : retDate,
       pax: passengerCount,
       cabin,
       stopFilter,
+      timeOfDay,
+      excludeBasicEconomy,
       preBuffer,
       coreSpan,
       postBuffer,
       airlines: selectedAirlines,
+      targetFares: {
+        [cabin]: autoTarget,
+      },
+      latestNote: `Initialized via AeroFlux (${aeroSim.marketEventDescription || 'Market Baseline'})`,
+      notes: tripNotes.trim() || undefined,
+      verifiedSpots: [
+        {
+          dayIndex: 0,
+          price: aeroSim.currentPrice,
+          date: depDate || dateTodayFormatted,
+          carrier: initialCarrier,
+          note: 'Genesis Outbound Anchor',
+          leg: 'outbound',
+        },
+      ],
     };
 
     onAddRoute(newRoute);
@@ -216,7 +289,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
     <div className="modal-overlay active" id="modal-add-flight" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header" style={{ justifyContent: 'center', position: 'relative' }}>
-          <span style={{ flex: 1, textAlign: 'center' }}>✈️ ADD FLIGHT 🚀</span>
+          <span style={{ flex: 1, textAlign: 'center' }}>✈️ ADD POOH 🚀</span>
           <button
             className="secondary-btn"
             style={{
@@ -234,8 +307,9 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             ✕
           </button>
         </div>
+
         <div className="modal-body">
-          {/* Row 1 */}
+          {/* Row 1: Trip Tag */}
           <div className="form-group">
             <label>TRIP NAME</label>
             <input
@@ -248,7 +322,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             />
           </div>
 
-          {/* Row 2 */}
+          {/* Row 2: Currency & Tracking Duration */}
           <div className="form-row">
             <div className="form-group" style={{ flex: 1 }}>
               <label>BASE CURRENCY (⚠️ CANNOT BE CHANGED LATER)</label>
@@ -261,6 +335,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                     fontSize: '14px',
                     color: 'var(--text-main)',
                     textTransform: 'none',
+                    cursor: 'pointer',
                   }}
                 >
                   <input
@@ -280,6 +355,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                     fontSize: '14px',
                     color: 'var(--text-main)',
                     textTransform: 'none',
+                    cursor: 'pointer',
                   }}
                 >
                   <input
@@ -313,7 +389,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 3 */}
+          {/* Row 3: Trip Type & Junk Fare Filter */}
           <div className="form-row">
             <div className="form-group">
               <label>TRIP TYPE</label>
@@ -326,12 +402,16 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                   onClick={() => setIsTripTypeDropOpen(!isTripTypeDropOpen)}
                 >
                   <span className="c-text">
-                    {tripType === 'round-trip' ? 'Round-Trip' : 'One-Way'}
+                    {tripType === 'round-trip'
+                      ? 'Round-Trip'
+                      : tripType === 'one-way'
+                      ? 'One-Way'
+                      : 'Open-Jaw (Split Airports)'}
                   </span>
                   <span className="c-arrow">▼</span>
                 </div>
                 {isTripTypeDropOpen && (
-                  <div className="custom-select-options" style={{ display: 'block' }}>
+                  <div className="custom-select-options" style={{ display: 'block', zIndex: 100 }}>
                     <div
                       className={`custom-option ${tripType === 'round-trip' ? 'selected' : ''}`}
                       onClick={() => {
@@ -350,6 +430,15 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                       }}
                     >
                       One-Way
+                    </div>
+                    <div
+                      className={`custom-option ${tripType === 'open-jaw' ? 'selected' : ''}`}
+                      onClick={() => {
+                        setTripType('open-jaw');
+                        setIsTripTypeDropOpen(false);
+                      }}
+                    >
+                      Open-Jaw (Split Airports)
                     </div>
                   </div>
                 )}
@@ -376,7 +465,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                   <span className="c-arrow">▼</span>
                 </div>
                 {isStopFilterDropOpen && (
-                  <div className="custom-select-options" style={{ display: 'block' }}>
+                  <div className="custom-select-options" style={{ display: 'block', zIndex: 100 }}>
                     <div
                       className={`custom-option ${stopFilter === 'nonstop' ? 'selected' : ''}`}
                       onClick={() => {
@@ -410,7 +499,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 4 */}
+          {/* Row 4: Origin & Destination */}
           <div className="form-row">
             <div className="form-group">
               <label>ORIGIN (IATA)</label>
@@ -478,7 +567,90 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 5 */}
+          {/* Optional Open-Jaw Return Airport Row */}
+          {tripType === 'open-jaw' && (
+            <div
+              className="form-row open-jaw-container"
+              style={{
+                background: 'var(--bg-input)',
+                padding: '10px',
+                borderRadius: 'var(--radius)',
+                border: '1px dashed var(--accent)',
+              }}
+            >
+              <div className="form-group">
+                <label style={{ color: 'var(--accent)', fontWeight: 'bold' }}>
+                  🔀 RETURN ORIGIN (IATA)
+                </label>
+                <input
+                  type="text"
+                  className="form-control iata-input"
+                  id="input-return-origin-iata"
+                  maxLength={60}
+                  autoComplete="off"
+                  placeholder="e.g. HND - Tokyo"
+                  value={returnOriginInput}
+                  onChange={(e) => handleReturnOriginChange(e.target.value)}
+                  onFocus={() => {
+                    if (returnOriginMatches.length > 0) setShowReturnOriginDrop(true);
+                  }}
+                />
+                {showReturnOriginDrop && returnOriginMatches.length > 0 && (
+                  <div className="autocomplete-dropdown" style={{ display: 'block' }}>
+                    {returnOriginMatches.map((m) => (
+                      <div
+                        key={m.iata}
+                        className="autocomplete-item"
+                        onClick={() => {
+                          setReturnOriginInput(`${m.iata} - ${m.city} (${m.name})`);
+                          setShowReturnOriginDrop(false);
+                        }}
+                      >
+                        {m.iata} - {m.city} ({m.name})
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label style={{ color: 'var(--accent)', fontWeight: 'bold' }}>
+                  🔀 RETURN DESTINATION (IATA)
+                </label>
+                <input
+                  type="text"
+                  className="form-control iata-input"
+                  id="input-return-dest-iata"
+                  maxLength={60}
+                  autoComplete="off"
+                  placeholder="e.g. OAK - Oakland"
+                  value={returnDestInput}
+                  onChange={(e) => handleReturnDestChange(e.target.value)}
+                  onFocus={() => {
+                    if (returnDestMatches.length > 0) setShowReturnDestDrop(true);
+                  }}
+                />
+                {showReturnDestDrop && returnDestMatches.length > 0 && (
+                  <div className="autocomplete-dropdown" style={{ display: 'block' }}>
+                    {returnDestMatches.map((m) => (
+                      <div
+                        key={m.iata}
+                        className="autocomplete-item"
+                        onClick={() => {
+                          setReturnDestInput(`${m.iata} - ${m.city} (${m.name})`);
+                          setShowReturnDestDrop(false);
+                        }}
+                      >
+                        {m.iata} - {m.city} ({m.name})
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Row 5: Passengers & Cabin Class */}
           <div className="form-row">
             <div className="form-group">
               <label>PASSENGERS (1-10)</label>
@@ -514,7 +686,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                   <span className="c-arrow">▼</span>
                 </div>
                 {isCabinDropOpen && (
-                  <div className="custom-select-options" style={{ display: 'block' }}>
+                  <div className="custom-select-options" style={{ display: 'block', zIndex: 100 }}>
                     <div
                       className={`custom-option ${cabin === 'economy' ? 'selected' : ''}`}
                       onClick={() => {
@@ -557,7 +729,72 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 6 */}
+          {/* Row 6: Preferred Departure Time Window */}
+          <div className="form-group">
+            <label>⏰ PREFERRED DEPARTURE TIME WINDOW</label>
+            <div
+              className={`custom-select ${isTimeOfDayDropOpen ? 'open' : ''}`}
+              id="cs-time-of-day"
+            >
+              <div
+                className="custom-select-trigger"
+                onClick={() => setIsTimeOfDayDropOpen(!isTimeOfDayDropOpen)}
+              >
+                <span className="c-text">
+                  {timeOfDay === 'anytime'
+                    ? 'Anytime (All Day)'
+                    : timeOfDay === 'morning'
+                    ? 'Morning (06:00 - 12:00)'
+                    : timeOfDay === 'afternoon'
+                    ? 'Afternoon (12:00 - 18:00)'
+                    : 'Evening / Redeye (18:00+)'}
+                </span>
+                <span className="c-arrow">▼</span>
+              </div>
+              {isTimeOfDayDropOpen && (
+                <div className="custom-select-options" style={{ display: 'block', zIndex: 100 }}>
+                  <div
+                    className={`custom-option ${timeOfDay === 'anytime' ? 'selected' : ''}`}
+                    onClick={() => {
+                      setTimeOfDay('anytime');
+                      setIsTimeOfDayDropOpen(false);
+                    }}
+                  >
+                    Anytime (All Day)
+                  </div>
+                  <div
+                    className={`custom-option ${timeOfDay === 'morning' ? 'selected' : ''}`}
+                    onClick={() => {
+                      setTimeOfDay('morning');
+                      setIsTimeOfDayDropOpen(false);
+                    }}
+                  >
+                    Morning (06:00 - 12:00)
+                  </div>
+                  <div
+                    className={`custom-option ${timeOfDay === 'afternoon' ? 'selected' : ''}`}
+                    onClick={() => {
+                      setTimeOfDay('afternoon');
+                      setIsTimeOfDayDropOpen(false);
+                    }}
+                  >
+                    Afternoon (12:00 - 18:00)
+                  </div>
+                  <div
+                    className={`custom-option ${timeOfDay === 'evening' ? 'selected' : ''}`}
+                    onClick={() => {
+                      setTimeOfDay('evening');
+                      setIsTimeOfDayDropOpen(false);
+                    }}
+                  >
+                    Evening / Redeye (18:00+)
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Row 7: Departure & Return Dates */}
           <div className="form-row">
             <div className="form-group">
               <label>DEPARTURE DATE</label>
@@ -589,7 +826,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 7: Genesis Sweep Horizon */}
+          {/* Row 8: Genesis Sweep Horizon */}
           <div className="form-group">
             <label>GENESIS SWEEP HORIZON (Day 1 Fetch Modeling)</label>
             <div className="form-row" style={{ marginTop: '4px', alignItems: 'flex-end' }}>
@@ -657,7 +894,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
             </div>
           </div>
 
-          {/* Row 8: Target Airlines */}
+          {/* Row 9: Target Airlines */}
           <div className="form-group">
             <label>TARGET AIRLINES (Multi-Select)</label>
             <div className="form-row" style={{ alignItems: 'center' }}>
@@ -679,7 +916,7 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
                   <div
                     className="custom-select-options"
                     id="cs-options-airline"
-                    style={{ display: 'block' }}
+                    style={{ display: 'block', zIndex: 100 }}
                   >
                     {Object.entries(AIRLINE_GROUPS).map(([region, airlines]) => (
                       <React.Fragment key={region}>
@@ -723,7 +960,57 @@ export const AddFlightModal: React.FC<AddFlightModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Row 10: Exclude Basic Economy Toggle (Below Target Airlines) */}
+          <div
+            className="form-group"
+            style={{
+              padding: '10px 12px',
+              background: 'var(--bg-input)',
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+                textTransform: 'none',
+                color: 'var(--text-main)',
+                fontSize: '13px',
+                margin: 0,
+              }}
+            >
+              <input
+                type="checkbox"
+                id="input-exclude-basic-economy"
+                checked={excludeBasicEconomy}
+                onChange={(e) => setExcludeBasicEconomy(e.target.checked)}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              <span>
+                🧳 <strong>Exclude Basic Economy</strong> (Guaranteed overhead carry-on bag included)
+              </span>
+            </label>
+          </div>
+
+          {/* Row 11: Trip Notes (At bottom of modal) */}
+          <div className="form-group">
+            <label>📝 TRIP NOTES (Optional)</label>
+            <textarea
+              className="form-control"
+              id="input-trip-notes"
+              rows={2}
+              style={{ height: 'auto', minHeight: '56px', resize: 'vertical' }}
+              placeholder="e.g. Look for lie-flat business class or Star Alliance redemption sweet spots"
+              value={tripNotes}
+              onChange={(e) => setTripNotes(e.target.value)}
+            />
+          </div>
         </div>
+
         <div className="modal-footer">
           <button className="secondary-btn" onClick={onClose}>
             CANCEL

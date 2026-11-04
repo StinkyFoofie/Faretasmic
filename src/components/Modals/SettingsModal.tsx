@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AeroFluxHolidaysModal } from './AeroFluxHolidaysModal';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [shieldEnabled, setShieldEnabled] = useState(initialShieldEnabled);
   const [threshold, setThreshold] = useState(initialLockThreshold);
+  const [isHolidaysModalOpen, setIsHolidaysModalOpen] = useState(false);
 
   useEffect(() => {
     setShieldEnabled(initialShieldEnabled);
@@ -213,6 +215,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
           </div>
+
+          <hr style={{ border: 0, borderTop: '1px solid var(--border)' }} />
+
+          {/* AeroFlux Section */}
+          <div className="form-group">
+            <label>AEROFLUX</label>
+            <div style={{ paddingLeft: '14px', marginTop: '8px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '8px' }}>
+                Calendar surge modeling and regional holiday intelligence matrix.
+              </div>
+              <button
+                type="button"
+                className="secondary-btn"
+                id="btn-aeroflux-holidays"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  padding: '6px 14px',
+                  fontWeight: 'bold',
+                }}
+                onClick={() => setIsHolidaysModalOpen(true)}
+              >
+                📅 Holidays
+              </button>
+            </div>
+          </div>
         </div>
         <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
           <button className="secondary-btn" onClick={onClose}>
@@ -226,6 +256,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
       </div>
+
+      <AeroFluxHolidaysModal
+        isOpen={isHolidaysModalOpen}
+        onClose={() => setIsHolidaysModalOpen(false)}
+      />
     </div>
   );
 };

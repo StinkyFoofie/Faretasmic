@@ -2,7 +2,7 @@ import { Airport, AirlineItem, ThemeId } from './types';
 
 export const APP_CONFIG = {
   APP_TITLE: "✨ Faretasmic!!!!!",
-  APP_VERSION: "v0.8",
+  APP_VERSION: "v1",
   FIREBASE: {
     apiKey: "AIzaSyDtUAQVNKqQQ-nIVPIzHZuW7gUjg1j7C_c",
     authDomain: "faretasmic.firebaseapp.com",
@@ -14,15 +14,15 @@ export const APP_CONFIG = {
   DEFAULT_HOME_ORIGIN_AIRPORT_IATA: "SFO",
   ENABLE_DEV_DATA_SHUFFLE: true,
 
-  BTN_ADD_FLIGHT_EMPTY: "Add Flight",
-  BTN_ADD_FLIGHT_MAIN: "Add Flight",
+  BTN_ADD_FLIGHT_EMPTY: "ADD POOH",
+  BTN_ADD_FLIGHT_MAIN: "ADD POOH",
   BTN_BOOK_SEARCH: "💳 Book/Search Flights 🌐",
   BTN_EXPORT_CSV: "📥 EXPORT CSV",
   BTN_START_TRACKING: "Start Tracking",
   BTN_UNTRACK: "🗑️ UNTRACK",
 
   EMOJI_BTN_SETTINGS: "⚙️",
-  EMOJI_BTN_SHUFFLE_QA: "🎲",
+  EMOJI_BTN_SHUFFLE_QA: "🌀",
   EMOJI_BTN_THEME: "🎨",
 
   EMPTY_STATE_SUBTITLE: "Configure a route to begin price surveillance.",
@@ -33,23 +33,23 @@ export const APP_CONFIG = {
   PLACEHOLDER_TRIP_NAME: "Another Disney Vacation...",
   TOAST_FLIGHT_ADDED: "🚀 Flight Added! Surveillance Active",
   TOAST_SETTINGS_SAVED: "⚙️ Settings Successfully Saved",
+  TOAST_FAUXRECAST_GENERATED: "🌀 Fauxrecast generated via AeroCadabra",
 
   TOOLTIP_BTN_SETTINGS: "Settings",
-  TOOLTIP_BTN_SHUFFLE_QA: "Shuffle QA",
+  TOOLTIP_BTN_SHUFFLE_QA: "Fauxrecast (AeroCadabra Engine)",
   TOOLTIP_BTN_THEME: "Theme"
 };
 
 export const THEMES_LIST: { id: ThemeId | 'random'; label: string; isRandom?: boolean }[] = [
   { id: 'random', label: '🎲 Random', isRandom: true },
-  { id: 'cozy-village', label: '🌿 Cozy Village' },
-  { id: 'cyberpunk', label: '⚡ Cyberpunk' },
-  { id: 'gothic-crimson', label: '🍷 Gothic Crimson' },
-  { id: 'minimalist-light', label: '⚪ Minimalist Light' },
-  { id: 'modern-dark', label: '🌑 Modern Dark' },
-  { id: 'modern-light', label: '☀️ Modern Light' },
-  { id: 'retro-arcade', label: '🕹️ Retro Arcade' },
-  { id: 'synthwave-sunset', label: '🌆 Synthwave Sunset' },
-  { id: 'wasteland-terminal', label: '📟 Wasteland Terminal' }
+  { id: 'fantasmic-sorcerer', label: '✨ Fantasmic Sorcerer' },
+  { id: 'tomorrowland-tron', label: '🌐 Tomorrowland TRON' },
+  { id: 'haunted-mansion', label: '🔮 Haunted Mansion' },
+  { id: 'forbidden-mountain', label: '🏔️ Forbidden Mountain' },
+  { id: 'main-street-sunshine', label: '☀️ Main Street Sunshine' },
+  { id: 'cinderella-castle', label: '🏰 Cinderella Castle' },
+  { id: 'neverland-skies', label: '✨ Neverland Skies' },
+  { id: 'epcot-spaceship-earth', label: '🌐 Epcot Spaceship Earth' }
 ];
 
 export const AIRPORT_DICTIONARY: Airport[] = [

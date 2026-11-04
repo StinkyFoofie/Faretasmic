@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Route, ThemeId, ToastMessage } from './types';
+import { Route, ThemeId, ToastMessage, VerifiedSpot, CabinClass } from './types';
 import { APP_CONFIG, THEMES_LIST } from './config';
 import { Header } from './components/Header';
 import { OraclePanel } from './components/OraclePanel';
 import { PriceChart } from './components/PriceChart';
+import { TargetSurveillanceBox } from './components/TargetSurveillanceBox';
 import { ItineraryDetails } from './components/ItineraryDetails';
 import { HistoryLog } from './components/HistoryLog';
 import { Toast } from './components/Toast';
+import { useOutsideClick } from './hooks/useOutsideClick';
 
 import { ThemeModal } from './components/Modals/ThemeModal';
 import { SettingsModal } from './components/Modals/SettingsModal';
@@ -17,16 +19,45 @@ import { ValidationErrorModal } from './components/Modals/ValidationErrorModal';
 import { FlightRouterModal } from './components/Modals/FlightRouterModal';
 import { AddFlightModal } from './components/Modals/AddFlightModal';
 
+import { SEED_ROUTE, generateAeroFluxTrajectory, generateCabinSpecificTrajectory } from './engine/aeroflux';
+
+const DISNEY_THEMES = new Set<string>([
+  'fantasmic-sorcerer',
+  'tomorrowland-tron',
+  'haunted-mansion',
+  'forbidden-mountain',
+  'main-street-sunshine',
+  'cinderella-castle',
+  'neverland-skies',
+  'epcot-spaceship-earth',
+]);
+
 export const App: React.FC = () => {
-  // Theme state
+  // Theme state (Default to Fantasmic Sorcerer, fallback for legacy themes)
   const [activeTheme, setActiveTheme] = useState<ThemeId>(() => {
-    return (localStorage.getItem('app_theme') as ThemeId) || 'modern-dark';
+    const saved = localStorage.getItem('app_theme');
+    if (saved && DISNEY_THEMES.has(saved)) {
+      return saved as ThemeId;
+    }
+    return 'fantasmic-sorcerer';
   });
 
-  // Apply theme to body
+  // Apply theme to body and synchronize document head meta theme-color (Proposal 2)
   useEffect(() => {
     document.body.setAttribute('data-theme', activeTheme);
     localStorage.setItem('app_theme', activeTheme);
+
+    const style = getComputedStyle(document.body);
+    const bg = style.getPropertyValue('--bg-base').trim();
+    if (bg) {
+      let meta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        document.head.appendChild(meta);
+      }
+      meta.content = bg;
+    }
   }, [activeTheme]);
 
   // Quota and telemetry state
@@ -43,17 +74,18 @@ export const App: React.FC = () => {
     localStorage.setItem('faretasmic_fetches', apiFetches.toString());
   }, [apiFetches]);
 
-  // Monitored routes state
+  // Monitored routes state (defaults to 🌱 Seed route if empty)
   const [routes, setRoutes] = useState<Route[]>(() => {
     try {
       const saved = localStorage.getItem('faretasmic_routes');
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed.length > 0) return parsed;
       }
     } catch (e) {
       console.warn('Failed to parse saved routes:', e);
     }
-    return [];
+    return [SEED_ROUTE];
   });
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(() => {
@@ -64,8 +96,22 @@ export const App: React.FC = () => {
         if (parsed.length > 0) return parsed[0].id;
       }
     } catch {}
-    return null;
+    return SEED_ROUTE.id;
   });
+
+  const activeRoute = routes.find((r) => r.id === selectedRouteId) || null;
+
+  // Active cabin view selection (synchronized between chart, target box, and oracle)
+  const [activeCabin, setActiveCabin] = useState<CabinClass>(() => {
+    return activeRoute?.cabin || 'economy';
+  });
+
+  // Keep activeCabin in sync when route changes
+  useEffect(() => {
+    if (activeRoute?.cabin) {
+      setActiveCabin(activeRoute.cabin);
+    }
+  }, [selectedRouteId]);
 
   useEffect(() => {
     localStorage.setItem('faretasmic_routes', JSON.stringify(routes));
@@ -79,9 +125,9 @@ export const App: React.FC = () => {
   // Toast notifications state
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const showToast = (text: string) => {
+  const showToast = (text: string, isCelebration?: boolean) => {
     const id = 'toast_' + Date.now() + Math.random().toString(36).substring(2, 6);
-    setToasts((prev) => [...prev, { id, text }]);
+    setToasts((prev) => [...prev, { id, text, isCelebration }]);
 
     setTimeout(() => {
       setToasts((prev) =>
@@ -92,6 +138,44 @@ export const App: React.FC = () => {
       }, 350);
     }, 5000);
   };
+
+  // Celestial Target Hit Celebration (Proposal 3)
+  useEffect(() => {
+    if (!activeRoute) return;
+    const target = activeRoute.targetFares?.[activeCabin];
+    if (target !== undefined) {
+      const effPoints = generateCabinSpecificTrajectory(activeRoute, activeCabin);
+      const effectiveCurrentPrice = effPoints[0] || activeRoute.currentPrice;
+      if (effectiveCurrentPrice <= target) {
+        const isCelebrated =
+          typeof activeRoute.isTargetHitCelebrated === 'object' && activeRoute.isTargetHitCelebrated !== null
+            ? (activeRoute.isTargetHitCelebrated as Partial<Record<CabinClass, boolean>>)[activeCabin]
+            : false;
+
+        if (!isCelebrated) {
+          showToast(
+            `🎉 CELESTIAL TARGET HIT! ${activeRoute.tag} (${activeCabin.toUpperCase()}) reached $${effectiveCurrentPrice} (Target: $${target})! 🚀`,
+            true
+          );
+          setRoutes((prev) =>
+            prev.map((r) =>
+              r.id === activeRoute.id
+                ? {
+                    ...r,
+                    isTargetHitCelebrated: {
+                      ...(typeof r.isTargetHitCelebrated === 'object' && r.isTargetHitCelebrated !== null
+                        ? r.isTargetHitCelebrated
+                        : {}),
+                      [activeCabin]: true,
+                    },
+                  }
+                : r
+            )
+          );
+        }
+      }
+    }
+  }, [activeRoute?.id, activeRoute?.currentPrice, activeCabin, activeRoute?.targetFares]);
 
   // Modals state
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
@@ -105,6 +189,9 @@ export const App: React.FC = () => {
 
   // Route selector dropdown open state
   const [isRouteSelectorOpen, setIsRouteSelectorOpen] = useState(false);
+  const routeSelectorRef = useOutsideClick<HTMLDivElement>(isRouteSelectorOpen, () =>
+    setIsRouteSelectorOpen(false)
+  );
 
   // Manage body scroll lock
   const isAnyModalOpen =
@@ -124,7 +211,6 @@ export const App: React.FC = () => {
   // Calculations
   const callsRemaining = APP_CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS - apiFetches;
   const maxMonitors = Math.max(0, Math.floor(callsRemaining / (2 * 30 + 14)));
-  const activeRoute = routes.find((r) => r.id === selectedRouteId) || null;
 
   // Actions
   const handleSelectTheme = (themeId: ThemeId | 'random') => {
@@ -149,12 +235,73 @@ export const App: React.FC = () => {
     setIsFetchOverrideModalOpen(false);
   };
 
-  const handleExecuteTrueUp = () => {
+  const handleExecuteLiveSweep = () => {
     if (activeRoute) {
       setApiFetches((prev) => prev + activeRoute.horizon);
       setIsManualTrueUpModalOpen(false);
-      showToast(`⚡ Manual true-up completed: +${activeRoute.horizon} fetches recorded.`);
+      showToast(`⚡ Manual sweep completed: +${activeRoute.horizon} fetches recorded.`);
     }
+  };
+
+  const handleLogManualFare = (spot: {
+    fare: number;
+    carrier: string;
+    leg: 'outbound' | 'return' | 'both';
+    note: string;
+  }) => {
+    if (!activeRoute) return;
+
+    const todayStr = new Date().toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: '2-digit',
+    });
+
+    const newDataPoints = [...activeRoute.dataPoints];
+    if (spot.leg === 'outbound' || spot.leg === 'both') {
+      newDataPoints[0] = spot.fare;
+    }
+    if (spot.leg === 'return' || spot.leg === 'both') {
+      newDataPoints[activeRoute.horizon - 1] = spot.fare;
+    }
+
+    const dayTarget = spot.leg === 'return' ? activeRoute.horizon - 1 : 0;
+    const newSpot: VerifiedSpot = {
+      dayIndex: dayTarget,
+      price: spot.fare,
+      date: new Date().toISOString().split('T')[0],
+      carrier: spot.carrier,
+      note: spot.note,
+      leg: spot.leg,
+    };
+
+    const updatedSpots = [
+      ...(activeRoute.verifiedSpots || []).filter((s) => s.dayIndex !== dayTarget),
+      newSpot,
+    ];
+
+    const noteText = spot.note ? ` — ${spot.note}` : '';
+    const newLogItem = `${todayStr} : ${spot.carrier} ($${spot.fare.toFixed(2)} Spot)${noteText}`;
+    const nextLogs = [newLogItem, ...activeRoute.historyLog];
+    if (nextLogs.length > 6) nextLogs.pop();
+
+    const updatedRoutes = routes.map((r) => {
+      if (r.id === activeRoute.id) {
+        return {
+          ...r,
+          currentPrice: spot.fare,
+          dataPoints: newDataPoints,
+          historyLog: nextLogs,
+          latestNote: spot.note || r.latestNote,
+          verifiedSpots: updatedSpots,
+        };
+      }
+      return r;
+    });
+
+    setRoutes(updatedRoutes);
+    setIsManualTrueUpModalOpen(false);
+    showToast(`📌 Verified Fare Logged: $${spot.fare.toFixed(2)} (0 API Calls)`);
   };
 
   const handleUntrackRoute = () => {
@@ -169,49 +316,103 @@ export const App: React.FC = () => {
   const handleAddRoute = (newRoute: Route) => {
     setRoutes((prev) => [...prev, newRoute]);
     setSelectedRouteId(newRoute.id);
+    setActiveCabin(newRoute.cabin || 'economy');
     setIsAddFlightModalOpen(false);
     showToast(`${APP_CONFIG.TOAST_FLIGHT_ADDED} (${newRoute.origin} ➔ ${newRoute.dest})`);
   };
 
-  const handleShuffleQA = () => {
+  // 🎯 Target Fare Management (Multi-Cabin Memory - Proposal 1)
+  const handleUpdateTargetFare = (cabin: CabinClass, fare: number | undefined) => {
     if (!activeRoute) return;
-    const baseCurrent = Math.floor(Math.random() * 200) + 300;
-    const dataVals: number[] = [];
-    for (let i = 0; i < activeRoute.horizon; i++) {
-      const flux = Math.sin(i) * 15 + (Math.random() * 20 - 10);
-      dataVals.push(baseCurrent + flux);
+    const updatedTargets = { ...(activeRoute.targetFares || {}) };
+    const updatedCelebrations: Partial<Record<CabinClass, boolean>> =
+      typeof activeRoute.isTargetHitCelebrated === 'object' && activeRoute.isTargetHitCelebrated !== null
+        ? { ...activeRoute.isTargetHitCelebrated }
+        : {};
+
+    if (fare !== undefined) {
+      updatedTargets[cabin] = fare;
+      // Reset celebration if user raised or updated the target
+      delete updatedCelebrations[cabin];
+    } else {
+      delete updatedTargets[cabin];
+      delete updatedCelebrations[cabin];
     }
-    dataVals[0] = baseCurrent;
-    dataVals[activeRoute.horizon - 1] = baseCurrent + 45;
+
+    const updatedRoutes = routes.map((r) =>
+      r.id === activeRoute.id
+        ? { ...r, targetFares: updatedTargets, isTargetHitCelebrated: updatedCelebrations }
+        : r
+    );
+    setRoutes(updatedRoutes);
+    if (fare !== undefined) {
+      showToast(`🎯 Target fare for ${cabin.toUpperCase()} set to $${fare} ${activeRoute.currency}`);
+    }
+  };
+
+  // 🎯 1-Click Smart Target Auto-Anchor (Proposal 2)
+  const handleAutoAnchorTarget = (cabin: CabinClass) => {
+    if (!activeRoute) return;
+    const effectivePrices = generateCabinSpecificTrajectory(activeRoute, cabin);
+    const sorted = [...effectivePrices].sort((a, b) => a - b);
+    const p25 = sorted[Math.floor(sorted.length * 0.25)] || effectivePrices[0];
+
+    handleUpdateTargetFare(cabin, p25);
+    showToast(`🎯 Auto-anchored ${cabin.toUpperCase()} target to 25th percentile: $${p25} ${activeRoute.currency}`);
+  };
+
+  // 🌀 Fauxrecast Handler (AeroFlux Engine)
+  const handleFauxrecast = () => {
+    if (!activeRoute) return;
+
+    const aeroSim = generateAeroFluxTrajectory({
+      origin: activeRoute.origin,
+      dest: activeRoute.dest,
+      horizon: activeRoute.horizon,
+      currency: activeRoute.currency,
+      cabin: activeRoute.cabin,
+      pax: activeRoute.pax,
+      depDate: activeRoute.depDate,
+    });
 
     const todayStr = new Date().toLocaleDateString('en-US', {
       month: '2-digit',
       day: '2-digit',
       year: '2-digit',
     });
-    const carriers = ['DL', 'AC', 'UA', 'AA', 'JL'];
+
+    const carriers =
+      activeRoute.airlines && activeRoute.airlines.length > 0
+        ? activeRoute.airlines
+        : ['DL', 'AC', 'UA', 'AA', 'JL'];
     const rndCarrier = carriers[Math.floor(Math.random() * carriers.length)];
     const rndFlight = Math.floor(Math.random() * 900) + 100;
-    const newLogItem = `${todayStr} : ${rndCarrier} ${rndFlight}`;
+    const eventSuffix = aeroSim.marketEventDescription
+      ? ` [${aeroSim.marketEventDescription}]`
+      : '';
+    const newLogItem = `${todayStr} : ${rndCarrier} ${rndFlight} ($${aeroSim.currentPrice}.00 Fauxrecast)${eventSuffix}`;
 
     const updatedRoutes = routes.map((r) => {
       if (r.id === activeRoute.id) {
         const nextLogs = [newLogItem, ...r.historyLog];
-        if (nextLogs.length > 5) nextLogs.pop();
+        if (nextLogs.length > 6) nextLogs.pop();
         return {
           ...r,
-          currentPrice: baseCurrent,
-          dataPoints: dataVals,
+          currentPrice: aeroSim.currentPrice,
+          dataPoints: aeroSim.dataPoints,
+          holidayDays: aeroSim.holidayDays,
           historyLog: nextLogs,
+          latestNote: aeroSim.marketEventDescription || r.latestNote,
         };
       }
       return r;
     });
 
     setRoutes(updatedRoutes);
-    showToast('🎲 QA Price Shuffle applied.');
+    showToast(APP_CONFIG.TOAST_FAUXRECAST_GENERATED);
   };
 
+  // CSV Export with Verified Spots & Notes
   const handleExportCSV = () => {
     if (!activeRoute) return;
     const headers = [
@@ -225,6 +426,8 @@ export const App: React.FC = () => {
       'Passengers',
       'Cabin',
       'StopFilter',
+      'VerifiedSpot',
+      'ObservationNotes',
     ];
 
     const baseDate = new Date();
@@ -232,6 +435,15 @@ export const App: React.FC = () => {
       const d = new Date(baseDate);
       d.setDate(d.getDate() + idx);
       const dateStr = d.toISOString().split('T')[0];
+
+      const matchingSpot = activeRoute.verifiedSpots?.find((s) => s.dayIndex === idx);
+      const isVerified = matchingSpot ? `Yes (${matchingSpot.carrier || 'Verified'})` : 'Synthetic Flux';
+      const cleanNote = matchingSpot?.note
+        ? matchingSpot.note.replace(/"/g, '""')
+        : idx === 0 && activeRoute.latestNote
+        ? activeRoute.latestNote.replace(/"/g, '""')
+        : '';
+
       return [
         idx + 1,
         dateStr,
@@ -243,6 +455,8 @@ export const App: React.FC = () => {
         activeRoute.pax,
         activeRoute.cabin,
         activeRoute.stopFilter,
+        `"${isVerified}"`,
+        `"${cleanNote}"`,
       ].join(',');
     });
 
@@ -258,7 +472,7 @@ export const App: React.FC = () => {
     link.click();
     document.body.removeChild(link);
 
-    showToast('📥 EXPORT CSV: Download started');
+    showToast('📥 EXPORT CSV: Verified Trajectory downloaded');
   };
 
   const handleFireRouterStub = (targetName: string) => {
@@ -278,22 +492,23 @@ export const App: React.FC = () => {
           lockThreshold={lockThreshold}
           onOpenTheme={() => setIsThemeModalOpen(true)}
           onOpenSettings={() => setIsSettingsModalOpen(true)}
-          onShuffleQA={handleShuffleQA}
+          onShuffleQA={handleFauxrecast}
           hasActiveRoute={!!activeRoute}
         />
 
         {/* Main Split Architecture */}
         <div className="main-grid">
-          {/* Left Column: Controls & Oracle */}
+          {/* Left Column: Controls, Target Box & Oracle */}
           <div className="left-col" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div className="panel">
               <div className="panel-title" style={{ textAlign: 'center' }}>
-                Active Monitors (<span id="ui-monitor-count">{routes.length}</span> /{' '}
+                ✈️ POOHTRAX (<span id="ui-monitor-count">{routes.length}</span> /{' '}
                 <span id="ui-monitor-max">{maxMonitors}</span>)
               </div>
 
               {/* Custom Select: Active Monitors */}
               <div
+                ref={routeSelectorRef}
                 className={`custom-select ${isRouteSelectorOpen ? 'open' : ''}`}
                 id="cs-active-monitor"
               >
@@ -350,13 +565,24 @@ export const App: React.FC = () => {
                   disabled={!activeRoute}
                   onClick={() => setIsManualTrueUpModalOpen(true)}
                 >
-                  ⚡ Fetch
+                  ⚡ True-Up / Spot
                 </button>
               </div>
             </div>
 
-            {/* Oracle Panel */}
-            {activeRoute && <OraclePanel route={activeRoute} />}
+            {/* Target Fare Surveillance Box */}
+            {activeRoute && (
+              <TargetSurveillanceBox
+                route={activeRoute}
+                activeCabin={activeCabin}
+                onCabinChange={setActiveCabin}
+                onUpdateTargetFare={handleUpdateTargetFare}
+                onAutoAnchorTarget={handleAutoAnchorTarget}
+              />
+            )}
+
+            {/* Oracle Panel with Speedometer Dial & 4 Pillars */}
+            {activeRoute && <OraclePanel route={activeRoute} activeCabin={activeCabin} />}
           </div>
 
           {/* Right Column: Trajectory & Data */}
@@ -377,7 +603,11 @@ export const App: React.FC = () => {
             ) : (
               /* Active Dashboard Canvas */
               <div id="active-dashboard-canvas" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <PriceChart route={activeRoute} />
+                <PriceChart
+                  route={activeRoute}
+                  selectedCabin={activeCabin}
+                  onSelectCabin={setActiveCabin}
+                />
 
                 <div className="details-wrapper">
                   <ItineraryDetails route={activeRoute} />
@@ -447,7 +677,8 @@ export const App: React.FC = () => {
         currentFetches={apiFetches}
         maxFetches={APP_CONFIG.MAXIMUM_FREE_TIER_MONTHLY_CALLS}
         lockThreshold={lockThreshold}
-        onExecute={handleExecuteTrueUp}
+        onExecuteSweep={handleExecuteLiveSweep}
+        onLogManualFare={handleLogManualFare}
         onClose={() => setIsManualTrueUpModalOpen(false)}
       />
 

@@ -11,7 +11,9 @@ export const Toast: React.FC<ToastProps> = ({ toasts }) => {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`theme-toast ${toast.collapsing ? 'magic-collapsing' : ''}`}
+          className={`theme-toast ${toast.isCelebration ? 'toast-celestial' : ''} ${
+            toast.collapsing ? 'magic-collapsing' : ''
+          }`}
         >
           {toast.text}
         </div>
